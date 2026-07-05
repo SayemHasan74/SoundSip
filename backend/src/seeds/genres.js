@@ -149,7 +149,7 @@ const genres = [
 const seedGenres = async () => {
 	try {
 		// Connect to MongoDB
-		const mongoURI = process.env.MONGODB_URI || "mongodb://localhost:27017/soundsip";
+		const mongoURI = process.env.MONGODB_URI || "mongodb://localhost:27017/amar_gaan";
 		await mongoose.connect(mongoURI);
 		console.log("✅ Connected to MongoDB");
 

@@ -365,7 +365,7 @@ export const useSettingsStore = create<SettingsStore>()(
 				const url = URL.createObjectURL(dataBlob);
 				const link = document.createElement("a");
 				link.href = url;
-				link.download = "soundsip-settings.json";
+				link.download = "amar-gaan-settings.json";
 				link.click();
 				URL.revokeObjectURL(url);
 				toast.success("Settings exported successfully");
@@ -377,7 +377,7 @@ export const useSettingsStore = create<SettingsStore>()(
 			},
 		}),
 		{
-			name: "soundsip-settings",
+			name: "amar-gaan-settings",
 			partialize: (state) => ({ settings: state.settings }),
 		}
 	)

@@ -4,9 +4,19 @@ let io;
 let userSockets;
 
 export const initializeSocket = (server) => {
+	const allowedOrigins = [
+		process.env.CLIENT_URL,
+		process.env.RENDER_EXTERNAL_URL,
+	].filter(Boolean);
+
 	io = new Server(server, {
 		cors: {
-			origin: ["http://localhost:3000", "http://127.0.0.1:3000"],
+			origin: (origin, callback) => {
+				if (!origin || allowedOrigins.includes(origin) || /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin)) {
+					return callback(null, true);
+				}
+				return callback(new Error(`Socket CORS blocked origin: ${origin}`));
+			},
 			credentials: true,
 			methods: ["GET", "POST"]
 		},

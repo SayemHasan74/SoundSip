@@ -3,7 +3,7 @@ import mongoose from "mongoose";
 export const connectDB = async () => {
 	try {
 		// Use environment variable or fallback to local MongoDB
-		const mongoURI = process.env.MONGODB_URI || "mongodb://localhost:27017/soundsip";
+		const mongoURI = process.env.MONGODB_URI || "mongodb://localhost:27017/amar_gaan";
 		
 		console.log("Attempting to connect to MongoDB...");
 		const conn = await mongoose.connect(mongoURI, {

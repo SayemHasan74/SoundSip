@@ -1,16 +1,33 @@
-# Root .gitignore for SoundSip
-
 # OS files
 .DS_Store
 Thumbs.db
 
-# Log files
+# Logs and process files
 *.log
 server_pid.txt
 server_output.log
+
+# Dependencies
+node_modules/
+
+# Environment variables
+.env
+.env.*
+!.env.sample
+
+# Build output
+dist/
+build/
+
+# Temporary/runtime files
+tmp/
+uploads/
 
 # Editor
 .vscode/
 .idea/
 *.swp
 *.swo
+
+# TypeScript cache
+*.tsbuildinfo

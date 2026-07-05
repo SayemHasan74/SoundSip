@@ -74,8 +74,8 @@ const MobileNav = () => {
 					{/* Header */}
 					<div className="flex items-center justify-between p-4 border-b border-zinc-800">
 						<div className="flex items-center gap-2">
-							<img src="/soundsip-logo.svg" className="size-8" alt="SoundSip logo" />
-							<span className="font-semibold text-white">SoundSip</span>
+							<img src="/soundscape-logo.svg" className="size-8" alt="SoundScape logo" />
+							<span className="font-semibold text-white">SoundScape</span>
 						</div>
 						<Button variant="ghost" size="icon" onClick={closeMenu}>
 							<X className="h-5 w-5" />

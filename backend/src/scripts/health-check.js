@@ -23,12 +23,12 @@ import { Friendship } from "../models/friendship.model.js";
 import { Genre } from "../models/genre.model.js";
 
 const healthCheck = async () => {
-	console.log("🔍 Starting SoundSip Backend Health Check...\n");
+	console.log("🔍 Starting Amar Gaan Backend Health Check...\n");
 
 	try {
 		// 1. MongoDB Connection Test
 		console.log("1️⃣ Testing MongoDB Connection...");
-		const mongoURI = process.env.MONGODB_URI || "mongodb://localhost:27017/soundsip";
+		const mongoURI = process.env.MONGODB_URI || "mongodb://localhost:27017/amar_gaan";
 		await mongoose.connect(mongoURI);
 		console.log("✅ MongoDB connected successfully");
 		console.log(`📊 Database: ${mongoose.connection.name}`);

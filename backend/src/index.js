@@ -32,6 +32,15 @@ dotenv.config();
 const __dirname = path.resolve();
 const app = express();
 const PORT = process.env.PORT || 5001;
+const allowedOrigins = [
+	process.env.CLIENT_URL,
+	process.env.RENDER_EXTERNAL_URL,
+].filter(Boolean);
+const isAllowedOrigin = (origin) => {
+	if (!origin) return true;
+	if (allowedOrigins.includes(origin)) return true;
+	return /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin);
+};
 
 const httpServer = createServer(app);
 initializeSocket(httpServer);
@@ -46,13 +55,19 @@ app.use((req, res, next) => {
 
 app.use(
 	cors({
-		origin: ["http://localhost:3000", "http://localhost:3001", "http://localhost:3002", "http://127.0.0.1:3000", "http://127.0.0.1:3001", "http://127.0.0.1:3002"],
+		origin: (origin, callback) => {
+			if (isAllowedOrigin(origin)) {
+				return callback(null, true);
+			}
+			return callback(new Error(`CORS blocked origin: ${origin}`));
+		},
 		credentials: true,
 	})
 );
 
 app.use(express.json()); // to parse req.body
 app.use(express.urlencoded({ extended: true })); // to parse form data
+app.get("/healthz", (req, res) => res.status(200).json({ status: "ok" }));
 app.use(clerkMiddleware()); // this will add auth to req obj => req.auth
 app.use(
 	fileUpload({
