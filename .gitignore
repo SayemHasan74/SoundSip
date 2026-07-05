@@ -1,0 +1,16 @@
+# Root .gitignore for SoundSip
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Log files
+*.log
+server_pid.txt
+server_output.log
+
+# Editor
+.vscode/
+.idea/
+*.swp
+*.swo

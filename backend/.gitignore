@@ -1,0 +1,24 @@
+# Backend .gitignore
+
+# Dependencies
+node_modules/
+
+# Environment variables
+.env
+
+# Logs
+*.log
+server_pid.txt
+server_output.log
+
+# Temporary upload files
+tmp/
+uploads/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+.idea/
