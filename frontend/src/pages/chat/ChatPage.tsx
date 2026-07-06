@@ -1,8 +1,8 @@
 
 import { useChatStore } from "@/stores/useChatStore";
-import { usePlayerStore } from "@/stores/usePlayerStore";
 import { useUser } from "@clerk/clerk-react";
 import { useEffect, useRef, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import UsersList from "./components/UsersList";
 import ChatHeader from "./components/ChatHeader";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
@@ -39,20 +39,29 @@ const formatMessageTime = (date: string) => {
 
 const ChatPage = () => {
 	const { user } = useUser();
-	const { messages, selectedUser, fetchUsers, fetchMessages } = useChatStore();
-	const { currentSong } = usePlayerStore();
+	const { messages, selectedUser, users, fetchUsers, fetchMessages, setSelectedUser } = useChatStore();
+	const [searchParams] = useSearchParams();
 	const messagesEndRef = useRef<HTMLDivElement>(null);
 	const scrollAreaRef = useRef<HTMLDivElement>(null);
 	const [showScrollButton, setShowScrollButton] = useState(false);
 	const [showOnlineUsers, setShowOnlineUsers] = useState(false);
 	const [messageReactions, setMessageReactions] = useState<{[key: string]: any[]}>({});
 	const [typingUsers, setTypingUsers] = useState<Array<{id: string, name: string, avatar?: string}>>([]);
-	const [editingMessageId, setEditingMessageId] = useState<string | null>(null);
 	const [replyingToMessageId, setReplyingToMessageId] = useState<string | null>(null);
 
 	useEffect(() => {
 		if (user) fetchUsers();
 	}, [fetchUsers, user]);
+
+	useEffect(() => {
+		const userId = searchParams.get("user");
+		if (!userId || selectedUser?.clerkId === userId) return;
+
+		const userFromList = users.find((chatUser) => chatUser.clerkId === userId);
+		if (userFromList) {
+			setSelectedUser(userFromList);
+		}
+	}, [searchParams, selectedUser?.clerkId, setSelectedUser, users]);
 
 	useEffect(() => {
 		if (selectedUser) fetchMessages(selectedUser.clerkId);
@@ -178,7 +187,7 @@ const ChatPage = () => {
 	};
 
 	const handleMessageEdit = (messageId: string) => {
-		setEditingMessageId(messageId);
+		console.log('Edit message:', messageId);
 	};
 
 	const handleMessageDelete = (messageId: string) => {

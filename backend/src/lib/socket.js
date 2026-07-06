@@ -1,7 +1,41 @@
 import { Server } from "socket.io";
+import { verifyToken } from "@clerk/backend";
 
 let io;
 let userSockets;
+
+const getUserSocketIds = (userId) => {
+	const sockets = userSockets.get(userId);
+	if (!sockets) return [];
+	return sockets instanceof Set ? Array.from(sockets) : [sockets];
+};
+
+const addUserSocket = (userId, socketId) => {
+	const sockets = userSockets.get(userId) ?? new Set();
+	sockets.add(socketId);
+	userSockets.set(userId, sockets);
+};
+
+const removeUserSocket = (userId, socketId) => {
+	const sockets = userSockets.get(userId);
+	if (!sockets) return false;
+
+	if (sockets instanceof Set) {
+		sockets.delete(socketId);
+		if (sockets.size === 0) {
+			userSockets.delete(userId);
+			return true;
+		}
+		return false;
+	}
+
+	if (sockets === socketId) {
+		userSockets.delete(userId);
+		return true;
+	}
+
+	return false;
+};
 
 export const initializeSocket = (server) => {
 	const allowedOrigins = [
@@ -22,7 +56,7 @@ export const initializeSocket = (server) => {
 		},
 	});
 
-	userSockets = new Map(); // { userId: socketId}
+	userSockets = new Map(); // { userId: Set<socketId> }
 	const userActivities = new Map(); // {userId: activity}
 
 	// Function to broadcast online users to all clients
@@ -43,12 +77,8 @@ export const initializeSocket = (server) => {
 	const removeUser = (userId) => {
 		console.log("🗑️ Removing user from socket data:", userId);
 		
-		// Remove from userSockets
-		const socketId = userSockets.get(userId);
-		if (socketId) {
-			userSockets.delete(userId);
-			console.log("🔌 Removed socket mapping for user:", userId);
-		}
+		userSockets.delete(userId);
+		console.log("🔌 Removed socket mappings for user:", userId);
 		
 		// Remove from userActivities
 		if (userActivities.has(userId)) {
@@ -66,7 +96,7 @@ export const initializeSocket = (server) => {
 		console.log("📊 Current socket status:");
 		console.log("   Connected users:", userSockets.size);
 		console.log("   User IDs:", Array.from(userSockets.keys()));
-		console.log("   Socket IDs:", Array.from(userSockets.values()));
+		console.log("   Socket IDs:", Array.from(userSockets.values()).flatMap((sockets) => Array.from(sockets)));
 		console.log("   User Activities:", Array.from(userActivities.entries()));
 	};
 
@@ -76,7 +106,7 @@ export const initializeSocket = (server) => {
 			console.log("🧹 Starting orphaned connection cleanup...");
 			const { User } = await import("../models/user.model.js");
 			
-			for (const [userId, socketId] of userSockets.entries()) {
+			for (const [userId] of userSockets.entries()) {
 				const userExists = await User.findOne({ clerkId: userId });
 				if (!userExists) {
 					console.log("🧹 Removing orphaned connection for deleted user:", userId);
@@ -91,19 +121,47 @@ export const initializeSocket = (server) => {
 	// Set up periodic cleanup every 5 minutes
 	setInterval(cleanupOrphanedConnections, 5 * 60 * 1000);
 
+	io.use(async (socket, next) => {
+		try {
+			const token = socket.handshake.auth?.token;
+			if (!token) {
+				return next(new Error("Authentication required"));
+			}
+
+			const payload = await verifyToken(token, {
+				secretKey: process.env.CLERK_SECRET_KEY,
+			});
+
+			if (!payload?.sub) {
+				return next(new Error("Invalid auth token"));
+			}
+
+			socket.data.userId = payload.sub;
+			next();
+		} catch (error) {
+			console.error("❌ Socket authentication failed:", error);
+			next(new Error("Authentication failed"));
+		}
+	});
+
 	io.on("connection", (socket) => {
 		console.log("🔌 New socket connection:", socket.id);
-		console.log("📊 Socket auth data:", socket.auth);
+		const connectedUserId = socket.data.userId;
+		console.log("📊 Socket authenticated user:", connectedUserId);
 
-		socket.on("user_connected", (userId) => {
+		socket.on("user_connected", () => {
+			const userId = socket.data.userId;
 			console.log("🟢 User connected:", userId, "Socket:", socket.id);
 			
 			// Store user socket mapping
-			userSockets.set(userId, socket.id);
+			const wasOffline = getUserSocketIds(userId).length === 0;
+			addUserSocket(userId, socket.id);
 			userActivities.set(userId, "Idle"); // Changed from "Online" to "Idle"
 
 			// Broadcast to all connected sockets that this user just logged in
-			io.emit("user_connected", userId);
+			if (wasOffline) {
+				io.emit("user_connected", userId);
+			}
 
 			// Send current online users to the newly connected user
 			const currentOnlineUsers = Array.from(userSockets.keys());
@@ -120,7 +178,8 @@ export const initializeSocket = (server) => {
 			logSocketStatus();
 		});
 
-		socket.on("update_activity", ({ userId, activity }) => {
+		socket.on("update_activity", ({ activity }) => {
+			const userId = socket.data.userId;
 			console.log("📱 Activity updated:", userId, "->", activity);
 			userActivities.set(userId, activity);
 			
@@ -142,20 +201,14 @@ export const initializeSocket = (server) => {
 
 		socket.on("disconnect", () => {
 			console.log("🔌 Socket disconnected:", socket.id);
-			let disconnectedUserId;
+			const disconnectedUserId = socket.data.userId;
+			const isFullyOffline = disconnectedUserId
+				? removeUserSocket(disconnectedUserId, socket.id)
+				: false;
 			
-			// Find disconnected user
-			for (const [userId, socketId] of userSockets.entries()) {
-				if (socketId === socket.id) {
-					disconnectedUserId = userId;
-					userSockets.delete(userId);
-					userActivities.delete(userId);
-					break;
-				}
-			}
-			
-			if (disconnectedUserId) {
+			if (disconnectedUserId && isFullyOffline) {
 				console.log("🔴 User disconnected:", disconnectedUserId);
+				userActivities.delete(disconnectedUserId);
 				io.emit("user_disconnected", disconnectedUserId);
 				// Broadcast updated online users list
 				broadcastOnlineUsers();

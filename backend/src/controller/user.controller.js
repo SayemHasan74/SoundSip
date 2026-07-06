@@ -9,14 +9,22 @@ export const getAllUsers = async (req, res, next) => {
 	try {
 		const currentUserId = req.auth.userId;
 		console.log("🔄 getAllUsers called with currentUserId:", currentUserId);
-		
-		// Get all users first to see what's in the database
-		const allUsers = await User.find({});
-		console.log("👥 All users in database:", allUsers.map(u => ({ clerkId: u.clerkId, fullName: u.fullName })));
-		
-		// Filter out current user
-		const users = await User.find({ clerkId: { $ne: currentUserId } });
-		console.log("✅ Filtered users (excluding current user):", users.map(u => ({ clerkId: u.clerkId, fullName: u.fullName })));
+
+		const friendships = await Friendship.find({
+			$or: [
+				{ user1Id: currentUserId },
+				{ user2Id: currentUserId }
+			]
+		});
+
+		const friendIds = friendships.map((friendship) =>
+			friendship.user1Id === currentUserId ? friendship.user2Id : friendship.user1Id
+		);
+
+		const users = await User.find({ clerkId: { $in: friendIds } })
+			.select('clerkId fullName imageUrl handle isArtist artistName isVerified')
+			.sort({ fullName: 1 });
+		console.log("✅ Returning chat-visible friends:", users.map(u => ({ clerkId: u.clerkId, fullName: u.fullName })));
 		
 		res.status(200).json(users);
 	} catch (error) {
@@ -67,6 +75,21 @@ export const getMessages = async (req, res, next) => {
 	try {
 		const myId = req.auth.userId;
 		const { userId } = req.params;
+
+		if (userId === myId) {
+			return res.status(400).json({ message: "Cannot fetch a conversation with yourself" });
+		}
+
+		const friendship = await Friendship.exists({
+			$or: [
+				{ user1Id: myId, user2Id: userId },
+				{ user1Id: userId, user2Id: myId },
+			],
+		});
+
+		if (!friendship) {
+			return res.status(403).json({ message: "You can only view conversations with friends" });
+		}
 
 		const messages = await Message.find({
 			$or: [

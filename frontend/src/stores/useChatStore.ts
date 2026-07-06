@@ -16,7 +16,7 @@ interface ChatStore {
 	selectedUser: User | null;
 
 	fetchUsers: () => Promise<void>;
-	initSocket: (userId: string) => void;
+	initSocket: (userId: string) => Promise<void>;
 	disconnectSocket: () => void;
 	sendMessage: (receiverId: string, senderId: string, content: string, imageFile?: File | null, playlistData?: any) => void;
 	fetchMessages: (userId: string) => Promise<void>;
@@ -59,11 +59,18 @@ export const useChatStore = create<ChatStore>((set, get) => ({
 		}
 	},
 
-	initSocket: (userId) => {
-		if (!get().isConnected) {
+	initSocket: async (userId) => {
+		if (!get().isConnected && !socket.connected && !socket.active) {
 			console.log("🔌 Initializing socket connection for user:", userId);
+
+			const token = await (window as any).Clerk?.session?.getToken();
+			if (!token) {
+				console.warn("⚠️ Cannot connect socket without an auth token");
+				return;
+			}
 			
-			socket.auth = { userId };
+			socket.removeAllListeners();
+			socket.auth = { token };
 			socket.connect();
 
 			socket.on("connect", () => {
@@ -71,7 +78,7 @@ export const useChatStore = create<ChatStore>((set, get) => ({
 				console.log("📡 Emitting user_connected for:", userId);
 				
 				// Emit user_connected event to notify backend
-				socket.emit("user_connected", userId);
+				socket.emit("user_connected");
 				
 				set({ isConnected: true });
 			});
@@ -104,9 +111,22 @@ export const useChatStore = create<ChatStore>((set, get) => ({
 
 			socket.on("receive_message", (message: Message) => {
 				console.log("📨 Received message:", message);
-				set((state) => ({
-					messages: [...state.messages, message],
-				}));
+				set((state) => {
+					const selectedUserId = state.selectedUser?.clerkId;
+					const belongsToSelectedConversation =
+						selectedUserId &&
+						(message.senderId === selectedUserId || message.receiverId === selectedUserId);
+
+					if (!belongsToSelectedConversation) {
+						return state;
+					}
+
+					if (state.messages.some((existingMessage) => existingMessage._id === message._id)) {
+						return state;
+					}
+
+					return { messages: [...state.messages, message] };
+				});
 			});
 
 			socket.on("activity_updated", ({ userId, activity }) => {
@@ -142,7 +162,7 @@ export const useChatStore = create<ChatStore>((set, get) => ({
 
 			socket.on("disconnect", () => {
 				console.log("❌ Socket disconnected");
-				set({ isConnected: false, onlineUsers: new Set() });
+				set({ isConnected: false, onlineUsers: new Set(), userActivities: new Map() });
 			});
 
 			socket.on("connect_error", (error) => {
@@ -155,9 +175,10 @@ export const useChatStore = create<ChatStore>((set, get) => ({
 	},
 
 	disconnectSocket: () => {
-		if (get().isConnected) {
+		if (get().isConnected || socket.connected || socket.active) {
+			socket.removeAllListeners();
 			socket.disconnect();
-			set({ isConnected: false, onlineUsers: new Set() });
+			set({ isConnected: false, onlineUsers: new Set(), userActivities: new Map() });
 		}
 	},
 
@@ -180,7 +201,7 @@ export const useChatStore = create<ChatStore>((set, get) => ({
 			}
 
 			// Log FormData contents for debugging
-			for (let [key, value] of formData.entries()) {
+			for (const [key, value] of formData.entries()) {
 				console.log(`FormData entry: ${key} =`, value);
 			}
 

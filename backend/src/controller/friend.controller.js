@@ -216,10 +216,20 @@ export const getFriendRequests = async (req, res, next) => {
 		const friendRequests = await FriendRequest.find({
 			receiverId: currentUserId,
 			status: 'pending'
-		}).populate('senderId', 'clerkId fullName imageUrl handle isArtist artistName');
+		}).sort({ createdAt: -1 });
+
+		const senders = await User.find({
+			clerkId: { $in: friendRequests.map((request) => request.senderId) }
+		}).select('clerkId fullName imageUrl handle isArtist artistName isVerified');
+
+		const senderById = new Map(senders.map((sender) => [sender.clerkId, sender]));
+		const requestsWithSenders = friendRequests.map((request) => ({
+			...request.toObject(),
+			sender: senderById.get(request.senderId) || null
+		}));
 
 		res.status(200).json({
-			friendRequests
+			friendRequests: requestsWithSenders
 		});
 	} catch (error) {
 		next(error);
@@ -234,10 +244,20 @@ export const getSentFriendRequests = async (req, res, next) => {
 		const sentRequests = await FriendRequest.find({
 			senderId: currentUserId,
 			status: 'pending'
-		}).populate('receiverId', 'clerkId fullName imageUrl handle isArtist artistName');
+		}).sort({ createdAt: -1 });
+
+		const receivers = await User.find({
+			clerkId: { $in: sentRequests.map((request) => request.receiverId) }
+		}).select('clerkId fullName imageUrl handle isArtist artistName isVerified');
+
+		const receiverById = new Map(receivers.map((receiver) => [receiver.clerkId, receiver]));
+		const requestsWithReceivers = sentRequests.map((request) => ({
+			...request.toObject(),
+			receiver: receiverById.get(request.receiverId) || null
+		}));
 
 		res.status(200).json({
-			sentRequests
+			sentRequests: requestsWithReceivers
 		});
 	} catch (error) {
 		next(error);

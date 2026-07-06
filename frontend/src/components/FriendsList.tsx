@@ -114,7 +114,7 @@ const FriendsList = () => {
 										<Button
 											size="sm"
 											variant="outline"
-											onClick={() => navigate(`/chat?user=${friend._id}`)}
+											onClick={() => navigate(`/chat?user=${friend.clerkId}`)}
 											className="border-zinc-600 text-zinc-400 hover:bg-zinc-600 hover:text-white"
 										>
 											<MessageCircle className="size-3" />
@@ -122,7 +122,7 @@ const FriendsList = () => {
 										<Button
 											size="sm"
 											variant="outline"
-											onClick={() => handleRemoveFriend(friend._id)}
+											onClick={() => handleRemoveFriend(friend.clerkId)}
 											className="border-red-600 text-red-400 hover:bg-red-600 hover:text-white"
 										>
 											<UserMinus className="size-3" />

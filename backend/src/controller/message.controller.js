@@ -1,5 +1,25 @@
 import { Message } from "../models/message.model.js";
+import { User } from "../models/user.model.js";
+import { Friendship } from "../models/friendship.model.js";
 import cloudinary from "../lib/cloudinary.js";
+
+const areFriends = async (userId, otherUserId) => {
+	return Friendship.exists({
+		$or: [
+			{ user1Id: userId, user2Id: otherUserId },
+			{ user1Id: otherUserId, user2Id: userId }
+		]
+	});
+};
+
+const emitToUser = (io, userSockets, userId, event, payload) => {
+	const sockets = userSockets?.get(userId);
+	if (!io || !sockets) return false;
+
+	const socketIds = sockets instanceof Set ? Array.from(sockets) : [sockets];
+	socketIds.forEach((socketId) => io.to(socketId).emit(event, payload));
+	return socketIds.length > 0;
+};
 
 // Helper function for cloudinary uploads
 const uploadToCloudinary = async (file) => {
@@ -24,6 +44,20 @@ export const sendMessage = async (req, res, next) => {
 
 		if (!receiverId) {
 			return res.status(400).json({ message: "Receiver ID is required" });
+		}
+
+		if (receiverId === senderId) {
+			return res.status(400).json({ message: "You cannot send a message to yourself" });
+		}
+
+		const receiver = await User.findOne({ clerkId: receiverId });
+		if (!receiver) {
+			return res.status(404).json({ message: "Receiver not found" });
+		}
+
+		const friendship = await areFriends(senderId, receiverId);
+		if (!friendship) {
+			return res.status(403).json({ message: "You can only message friends" });
 		}
 
 		if (!content && !req.files?.imageFile && !playlistData) {
@@ -73,13 +107,8 @@ export const sendMessage = async (req, res, next) => {
 		// Emit real-time event for the receiver if they're online
 		// We'll need to access the socket from the request context
 		if (req.io && req.userSockets) {
-			const receiverSocketId = req.userSockets.get(receiverId);
-			if (receiverSocketId) {
-				console.log("📤 Sending real-time message to receiver:", receiverId);
-				req.io.to(receiverSocketId).emit("receive_message", message);
-			} else {
-				console.log("📤 Receiver offline, message stored:", receiverId);
-			}
+			const delivered = emitToUser(req.io, req.userSockets, receiverId, "receive_message", message);
+			console.log(delivered ? "📤 Sending real-time message to receiver:" : "📤 Receiver offline, message stored:", receiverId);
 		}
 
 		res.status(201).json(message);
@@ -93,6 +122,15 @@ export const getMessages = async (req, res, next) => {
 	try {
 		const { userId } = req.params;
 		const currentUserId = req.auth.userId;
+
+		if (userId === currentUserId) {
+			return res.status(400).json({ message: "Cannot fetch a conversation with yourself" });
+		}
+
+		const friendship = await areFriends(currentUserId, userId);
+		if (!friendship) {
+			return res.status(403).json({ message: "You can only view conversations with friends" });
+		}
 
 		const messages = await Message.find({
 			$or: [
