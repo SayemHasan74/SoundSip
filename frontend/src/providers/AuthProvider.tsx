@@ -3,7 +3,7 @@ import { useAuthStore } from "@/stores/useAuthStore";
 import { useChatStore } from "@/stores/useChatStore";
 import { useAuth, useUser } from "@clerk/clerk-react";
 import { Loader } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 const updateApiToken = (token: string | null) => {
 	if (token) axiosInstance.defaults.headers.common["Authorization"] = `Bearer ${token}`;
@@ -14,88 +14,84 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 	const { getToken, userId, isSignedIn } = useAuth();
 	const { user } = useUser();
 	const [loading, setLoading] = useState(true);
+	const initializedUserId = useRef<string | null>(null);
 	const { checkAdminStatus } = useAuthStore();
 	const { initSocket, disconnectSocket, fetchUsers } = useChatStore();
 
 	// Function to sync user with backend
-	const syncUserWithBackend = async (token: string, clerkUser: any) => {
+	const syncUserWithBackend = useCallback(async (clerkUser: any) => {
 		try {
-			console.log("🔄 Syncing user with backend:", {
+			await axiosInstance.post("/auth/callback", {
 				id: clerkUser.id,
 				firstName: clerkUser.firstName || "",
 				lastName: clerkUser.lastName || "",
 				imageUrl: clerkUser.imageUrl || "",
 			});
-
-			// Call auth callback to ensure user exists in backend
-			const response = await axiosInstance.post("/auth/callback", {
-				id: clerkUser.id,
-				firstName: clerkUser.firstName || "",
-				lastName: clerkUser.lastName || "",
-				imageUrl: clerkUser.imageUrl || "",
-			});
-			
-			console.log("✅ User synced with backend:", response.data);
 		} catch (error) {
 			console.error("❌ Failed to sync user with backend:", error);
+			throw error;
 		}
-	};
+	}, []);
 
 	useEffect(() => {
+		let cancelled = false;
+
 		const initAuth = async () => {
+			if (!isSignedIn || !userId || !user) {
+				initializedUserId.current = null;
+				updateApiToken(null);
+				disconnectSocket();
+				setLoading(false);
+				return;
+			}
+
 			try {
+				const needsUserSync = initializedUserId.current !== userId;
+				if (needsUserSync) setLoading(true);
+
 				const token = await getToken();
+				if (cancelled) return;
 				updateApiToken(token);
 				
-				if (token && userId && user) {
-					// Sync user with backend first
-					await syncUserWithBackend(token, user);
-					
-					// Check admin status
-					await checkAdminStatus();
-					
-					// Fetch users list
-					await fetchUsers();
-					
-					// Initialize socket for online status
-					console.log("🔌 Initializing socket for user:", userId);
-					initSocket(userId);
+				if (!token) throw new Error("Unable to create an authenticated session");
+
+				if (needsUserSync) {
+					// The user record must exist before protected pages start their requests.
+					await syncUserWithBackend(user);
+					if (cancelled) return;
+					initializedUserId.current = userId;
 				}
+
+				setLoading(false);
+				initSocket(userId);
+
+				// These requests populate secondary UI and should not block the app shell.
+				void Promise.allSettled([checkAdminStatus(), fetchUsers()]);
 			} catch (error: any) {
 				updateApiToken(null);
-				console.log("Error in auth provider", error);
+				console.error("Error in auth provider", error);
 			} finally {
-				setLoading(false);
+				if (!cancelled) setLoading(false);
 			}
 		};
 
-		initAuth();
+		void initAuth();
 
-		// Clean up socket on unmount
 		return () => {
-			console.log("Cleaning up socket connection");
+			cancelled = true;
 			disconnectSocket();
 		};
-	}, [getToken, userId, user, checkAdminStatus, initSocket, disconnectSocket, fetchUsers]);
-
-	// Handle socket connection when user signs in/out
-	useEffect(() => {
-		if (isSignedIn && userId && user) {
-			console.log("🟢 User signed in, initializing socket:", userId);
-			
-			// Ensure user is synced with backend
-			getToken().then(token => {
-				if (token) {
-					syncUserWithBackend(token, user);
-					fetchUsers();
-					initSocket(userId);
-				}
-			});
-		} else {
-			console.log("🔴 User signed out, disconnecting socket");
-			disconnectSocket();
-		}
-	}, [isSignedIn, userId, user, initSocket, disconnectSocket, fetchUsers]);
+	}, [
+		getToken,
+		userId,
+		user,
+		isSignedIn,
+		checkAdminStatus,
+		initSocket,
+		disconnectSocket,
+		fetchUsers,
+		syncUserWithBackend,
+	]);
 
 	if (loading)
 		return (

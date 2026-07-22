@@ -1,16 +1,30 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { Toaster } from "react-hot-toast";
-import { lazy, Suspense } from "react";
+import { lazy, Suspense, useEffect } from "react";
+import { useAuth } from "@clerk/clerk-react";
 
 // Pages
-const HomePage = lazy(() => import("./pages/home/HomePage"));
-const ChatPage = lazy(() => import("./pages/chat/ChatPage"));
-const AdminPage = lazy(() => import("./pages/admin/AdminPage"));
-const AlbumPage = lazy(() => import("./pages/album/AlbumPage"));
-const SearchPage = lazy(() => import("./pages/search/SearchPage"));
-const LibraryPage = lazy(() => import("./pages/library/LibraryPage"));
-const LikedSongsPage = lazy(() => import("./pages/liked-songs/LikedSongsPage"));
-const PlaylistPage = lazy(() => import("./pages/playlist/PlaylistPage"));
+const loadHomePage = () => import("./pages/home/HomePage");
+const loadChatPage = () => import("./pages/chat/ChatPage");
+const loadAdminPage = () => import("./pages/admin/AdminPage");
+const loadAlbumPage = () => import("./pages/album/AlbumPage");
+const loadSearchPage = () => import("./pages/search/SearchPage");
+const loadLibraryPage = () => import("./pages/library/LibraryPage");
+const loadLikedSongsPage = () => import("./pages/liked-songs/LikedSongsPage");
+const loadPlaylistPage = () => import("./pages/playlist/PlaylistPage");
+const loadArtistsPage = () => import("./pages/artists/ArtistsPage");
+const loadUserProfilePage = () => import("./pages/profile/UserProfilePage");
+const loadEditProfilePage = () => import("./pages/profile/EditProfilePage");
+const loadSettingsPage = () => import("./pages/settings/SettingsPage");
+
+const HomePage = lazy(loadHomePage);
+const ChatPage = lazy(loadChatPage);
+const AdminPage = lazy(loadAdminPage);
+const AlbumPage = lazy(loadAlbumPage);
+const SearchPage = lazy(loadSearchPage);
+const LibraryPage = lazy(loadLibraryPage);
+const LikedSongsPage = lazy(loadLikedSongsPage);
+const PlaylistPage = lazy(loadPlaylistPage);
 const NotFoundPage = lazy(() => import("./pages/404/NotFoundPage"));
 
 // Auth Pages
@@ -24,14 +38,14 @@ const OAuthCallbackPage = lazy(() => import("./pages/auth/OAuthCallbackPage"));
 const ArtistSignupPage = lazy(() => import("./pages/artist/ArtistSignupPage"));
 const ArtistVerificationPage = lazy(() => import("./pages/artist/ArtistVerificationPage"));
 const ArtistProfilePage = lazy(() => import("./pages/artist/ArtistProfilePage"));
-const ArtistsPage = lazy(() => import("./pages/artists/ArtistsPage"));
+const ArtistsPage = lazy(loadArtistsPage);
 
 // Profile Pages
-const UserProfilePage = lazy(() => import("./pages/profile/UserProfilePage"));
-const EditProfilePage = lazy(() => import("./pages/profile/EditProfilePage"));
+const UserProfilePage = lazy(loadUserProfilePage);
+const EditProfilePage = lazy(loadEditProfilePage);
 
 // Settings Page
-const SettingsPage = lazy(() => import("./pages/settings/SettingsPage"));
+const SettingsPage = lazy(loadSettingsPage);
 
 // Landing Page
 const LandingPage = lazy(() => import("./pages/landing/LandingPage"));
@@ -47,8 +61,41 @@ const RouteLoader = () => (
 );
 
 function App() {
+	const { isSignedIn } = useAuth();
+
+	useEffect(() => {
+		if (!isSignedIn) return;
+
+		const preloadCommonPages = () => {
+			void Promise.allSettled([
+				loadHomePage(),
+				loadSearchPage(),
+				loadChatPage(),
+				loadLibraryPage(),
+				loadLikedSongsPage(),
+				loadAlbumPage(),
+				loadPlaylistPage(),
+				loadArtistsPage(),
+				loadUserProfilePage(),
+			]);
+		};
+
+		const idleWindow = window as Window & {
+			requestIdleCallback?: (callback: () => void, options?: { timeout: number }) => number;
+			cancelIdleCallback?: (id: number) => void;
+		};
+
+		if (idleWindow.requestIdleCallback) {
+			const idleId = idleWindow.requestIdleCallback(preloadCommonPages, { timeout: 1500 });
+			return () => idleWindow.cancelIdleCallback?.(idleId);
+		}
+
+		const timerId = window.setTimeout(preloadCommonPages, 400);
+		return () => window.clearTimeout(timerId);
+	}, [isSignedIn]);
+
 	return (
-		<Router>
+		<Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
 			<AuthWrapper>
 				<Suspense fallback={<RouteLoader />}>
 					<Routes>

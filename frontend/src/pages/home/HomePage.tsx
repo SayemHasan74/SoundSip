@@ -1,6 +1,6 @@
 import Topbar from "@/components/Topbar";
 import { useMusicStore } from "@/stores/useMusicStore";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import SectionGrid from "./components/SectionGrid";
 import PopularArtists from "./components/PopularArtists";
@@ -56,6 +56,7 @@ const HomePage = () => {
 
 	const { initializeQueue, playAlbum } = usePlayerStore();
 	const [activeFilter, setActiveFilter] = useState('all');
+	const initialLoadStarted = useRef(false);
 
 	// Artists data from API
 
@@ -66,13 +67,29 @@ const HomePage = () => {
 	const recentlyPlayed: any[] = [];
 
 	useEffect(() => {
-		fetchFeaturedSongs();
-		fetchMadeForYouSongs();
-		fetchTrendingSongs();
-		fetchAlbums();
-		getPlaylists();
-		getAllArtists();
-	}, [fetchFeaturedSongs, fetchMadeForYouSongs, fetchTrendingSongs, fetchAlbums, getPlaylists, getAllArtists]);
+		if (initialLoadStarted.current) return;
+		initialLoadStarted.current = true;
+
+		if (featuredSongs.length === 0) fetchFeaturedSongs();
+		if (madeForYouSongs.length === 0) fetchMadeForYouSongs();
+		if (trendingSongs.length === 0) fetchTrendingSongs();
+		if (albums.length === 0) fetchAlbums();
+		if (playlists.length === 0) getPlaylists();
+		if (artists.length === 0) getAllArtists();
+	}, [
+		featuredSongs.length,
+		madeForYouSongs.length,
+		trendingSongs.length,
+		albums.length,
+		playlists.length,
+		artists.length,
+		fetchFeaturedSongs,
+		fetchMadeForYouSongs,
+		fetchTrendingSongs,
+		fetchAlbums,
+		getPlaylists,
+		getAllArtists,
+	]);
 
 	useEffect(() => {
 		if (madeForYouSongs.length > 0 && featuredSongs.length > 0 && trendingSongs.length > 0) {

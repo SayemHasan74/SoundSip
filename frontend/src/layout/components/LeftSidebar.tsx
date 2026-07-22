@@ -13,16 +13,14 @@ import { Link } from "react-router-dom";
 import { useFavoritesSync } from "@/hooks/useFavoritesSync";
 
 const LeftSidebar = () => {
-	const { fetchAlbums, getLibraryAlbums, libraryAlbums } = useMusicStore();
+	const { getLibraryAlbums, libraryAlbums } = useMusicStore();
 	const { 
 		playlists, 
 		likedSongsPlaylist, 
 		getPlaylists, 
-		initializeLikedSongsPlaylist, 
-		getLikedSongsPlaylist,
 		isLoading: playlistsLoading 
 	} = usePlaylistStore();
-	const { favorites, getFavorites } = useFavoritesStore();
+	const { favorites } = useFavoritesStore();
 	const { user } = useUser();
 	const [activeFilter, setActiveFilter] = useState('all');
 	const [searchQuery, setSearchQuery] = useState('');
@@ -35,14 +33,7 @@ const LeftSidebar = () => {
 		console.log("🔍 LeftSidebar: Initializing data fetch");
 		const initializeData = async () => {
 			try {
-				await Promise.all([
-					fetchAlbums(),
-					getPlaylists(),
-					initializeLikedSongsPlaylist(),
-					getLikedSongsPlaylist(),
-					getFavorites('song'),
-					getLibraryAlbums()
-				]);
+				await Promise.all([getPlaylists(), getLibraryAlbums()]);
 				console.log("✅ LeftSidebar: Data initialization completed");
 			} catch (error) {
 				console.error("❌ LeftSidebar: Error initializing data:", error);

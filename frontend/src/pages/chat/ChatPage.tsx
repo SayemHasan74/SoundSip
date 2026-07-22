@@ -50,8 +50,8 @@ const ChatPage = () => {
 	const [replyingToMessageId, setReplyingToMessageId] = useState<string | null>(null);
 
 	useEffect(() => {
-		if (user) fetchUsers();
-	}, [fetchUsers, user]);
+		if (user && users.length === 0) fetchUsers();
+	}, [fetchUsers, user, users.length]);
 
 	useEffect(() => {
 		const userId = searchParams.get("user");

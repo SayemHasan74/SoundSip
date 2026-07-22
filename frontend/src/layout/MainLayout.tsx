@@ -8,8 +8,25 @@ import LeftSidebar from "./components/LeftSidebar";
 import FriendsActivity from "./components/FriendsActivity";
 import AudioPlayer from "./components/AudioPlayer";
 import { PlaybackControls } from "./components/PlaybackControls";
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+
+const PageTransitionFallback = () => (
+	<div className="h-full bg-zinc-950 p-6" aria-label="Loading page">
+		<div className="h-8 w-40 rounded bg-zinc-800/70 animate-pulse mb-6" />
+		<div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+			{Array.from({ length: 8 }).map((_, index) => (
+				<div key={index} className="aspect-square rounded-md bg-zinc-900 animate-pulse" />
+			))}
+		</div>
+	</div>
+);
+
+const PageOutlet = () => (
+	<Suspense fallback={<PageTransitionFallback />}>
+		<Outlet />
+	</Suspense>
+);
 
 const MainLayout = () => {
 	const [isMobile, setIsMobile] = useState(false);
@@ -32,7 +49,7 @@ const MainLayout = () => {
 			<div className="h-screen bg-black text-white flex flex-col">
 				<AudioPlayer />
 				<div className="flex-1 flex flex-col overflow-hidden">
-					<Outlet />
+					<PageOutlet />
 				</div>
 				<PlaybackControls />
 			</div>
@@ -75,7 +92,7 @@ const MainLayout = () => {
 
 				{/* Main Content */}
 				<ResizablePanel defaultSize={60} minSize={30}>
-					<Outlet />
+					<PageOutlet />
 				</ResizablePanel>
 				<ResizableHandle className="group w-2 relative">
 					<div className="w-full h-full bg-transparent group-hover:bg-green-500/50 transition-colors duration-300 data-[resize-handle-state=drag]:bg-green-500" />

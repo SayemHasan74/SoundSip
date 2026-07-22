@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -38,43 +38,42 @@ const LibraryPage = () => {
 	const [sortBy, setSortBy] = useState<'recents' | 'alphabetical'>('recents');
 	const [showSearch, setShowSearch] = useState(false);
 	const [showCreatePlaylistModal, setShowCreatePlaylistModal] = useState(false);
+	const initialLoadStarted = useRef(false);
 	
 	const { 
 		playlists, 
 		likedSongsPlaylist, 
 		getPlaylists, 
-		initializeLikedSongsPlaylist,
 		deletePlaylist,
 		isLoading: playlistsLoading 
 	} = usePlaylistStore();
 	
 	const { isLoading: albumsLoading, getLibraryAlbums, libraryAlbums } = useMusicStore();
 	const { playAlbum } = usePlayerStore();
-	const { favorites, getFavorites, isLoading: favoritesLoading } = useFavoritesStore();
+	const { favorites, isLoading: favoritesLoading } = useFavoritesStore();
 	const { history, getListeningHistory, isLoading: historyLoading } = useListeningHistoryStore();
 
 	// Use the custom hook for real-time favorites synchronization
 	useFavoritesSync();
 
 	useEffect(() => {
-		console.log("🔍 LibraryPage: Initializing data fetch");
+		if (initialLoadStarted.current) return;
+		initialLoadStarted.current = true;
+
 		const initializeData = async () => {
 			try {
 				await Promise.all([
-					getPlaylists(),
-					initializeLikedSongsPlaylist(),
-					getLibraryAlbums(),
-					getFavorites('song'),
+					playlists.length === 0 ? getPlaylists() : Promise.resolve(),
+					libraryAlbums.length === 0 ? getLibraryAlbums() : Promise.resolve(),
 					getListeningHistory(50)
 				]);
-				console.log("✅ LibraryPage: Data initialization completed");
 			} catch (error) {
 				console.error("❌ LibraryPage: Error initializing data:", error);
 			}
 		};
 		
-		initializeData();
-	}, [getPlaylists, initializeLikedSongsPlaylist, getLibraryAlbums, getFavorites, getListeningHistory]);
+		void initializeData();
+	}, [getPlaylists, getLibraryAlbums, getListeningHistory, playlists.length, libraryAlbums.length]);
 
 	// Filter and sort playlists
 	const filteredPlaylists = playlists
@@ -103,7 +102,6 @@ const LibraryPage = () => {
 		});
 
 	// Filter and sort liked songs
-	console.log("🔍 LibraryPage: Current favorites:", favorites);
 	const filteredLikedSongs = favorites
 		.filter(fav => fav.type === 'song')
 		.filter(fav => 
@@ -116,26 +114,6 @@ const LibraryPage = () => {
 			}
 			return a.title.localeCompare(b.title);
 		});
-	console.log("🔍 LibraryPage: Filtered liked songs:", filteredLikedSongs);
-
-	// Debug logging
-	useEffect(() => {
-		console.log("🔍 LibraryPage: Current state:", {
-			playlists: playlists.length,
-			likedSongsPlaylist: likedSongsPlaylist ? {
-				id: likedSongsPlaylist._id,
-				songCount: likedSongsPlaylist.songCount,
-				songs: likedSongsPlaylist.songs?.length || 0
-			} : null,
-			favorites: favorites.length,
-			libraryAlbums: libraryAlbums.length,
-			history: history.length,
-			playlistsLoading,
-			albumsLoading,
-			favoritesLoading,
-			historyLoading
-		});
-	}, [playlists, likedSongsPlaylist, favorites, libraryAlbums, history, playlistsLoading, albumsLoading, favoritesLoading, historyLoading]);
 
 	// Filter and sort recently played
 	const filteredRecentlyPlayed = history
@@ -187,7 +165,11 @@ const LibraryPage = () => {
 
 	const renderContent = () => {
 		// Show loading state if any data is still loading
-		if (playlistsLoading || albumsLoading || favoritesLoading || historyLoading) {
+		const isInitialLoad = (
+			playlistsLoading || albumsLoading || favoritesLoading || historyLoading
+		) && playlists.length === 0 && libraryAlbums.length === 0 && favorites.length === 0 && history.length === 0;
+
+		if (isInitialLoad) {
 			return (
 				<div className="flex items-center justify-center py-12">
 					<div className="text-center">
