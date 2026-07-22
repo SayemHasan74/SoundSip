@@ -127,7 +127,6 @@ const userSchema = new mongoose.Schema(
 userSchema.index({ isArtist: 1, isVerified: 1 });
 userSchema.index({ genre: 1 });
 userSchema.index({ artistName: 1 });
-userSchema.index({ handle: 1 });
 userSchema.index({ favoriteGenres: 1 });
 // Add text index for search functionality
 userSchema.index({ 

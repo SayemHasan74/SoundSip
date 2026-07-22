@@ -68,7 +68,6 @@ const genreSchema = new mongoose.Schema(
 );
 
 // Indexes for better performance
-genreSchema.index({ name: 1 });
 genreSchema.index({ popularity: -1 });
 genreSchema.index({ totalSongs: -1 });
 genreSchema.index({ tags: 1 });
