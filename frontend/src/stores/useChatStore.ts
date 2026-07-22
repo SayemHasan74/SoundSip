@@ -31,6 +31,18 @@ const socket = io(baseURL, {
 	withCredentials: true,
 });
 
+const getFreshClerkToken = async () => {
+	const session = (window as any).Clerk?.session;
+	if (!session) return null;
+
+	try {
+		return await session.getToken({ skipCache: true });
+	} catch (error) {
+		console.warn("⚠️ Failed to refresh Clerk socket token, falling back to cached token", error);
+		return session.getToken();
+	}
+};
+
 export const useChatStore = create<ChatStore>((set, get) => ({
 	users: [],
 	isLoading: false,
@@ -60,17 +72,18 @@ export const useChatStore = create<ChatStore>((set, get) => ({
 	},
 
 	initSocket: async (userId) => {
+		const token = await getFreshClerkToken();
+		if (!token) {
+			console.warn("⚠️ Cannot connect socket without an auth token");
+			return;
+		}
+
+		socket.auth = { token };
+
 		if (!get().isConnected && !socket.connected && !socket.active) {
 			console.log("🔌 Initializing socket connection for user:", userId);
-
-			const token = await (window as any).Clerk?.session?.getToken();
-			if (!token) {
-				console.warn("⚠️ Cannot connect socket without an auth token");
-				return;
-			}
 			
 			socket.removeAllListeners();
-			socket.auth = { token };
 			socket.connect();
 
 			socket.on("connect", () => {
@@ -168,9 +181,17 @@ export const useChatStore = create<ChatStore>((set, get) => ({
 			socket.on("connect_error", (error) => {
 				console.error("❌ Socket connection error:", error);
 				set({ isConnected: false });
+
+				if (error.message === "Authentication failed") {
+					getFreshClerkToken().then((freshToken) => {
+						if (!freshToken) return;
+						socket.auth = { token: freshToken };
+						if (!socket.connected) socket.connect();
+					});
+				}
 			});
 		} else {
-			console.log("🔌 Socket already connected, skipping initialization");
+			console.log("🔌 Socket already connected, refreshed auth token");
 		}
 	},
 
