@@ -3,8 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useSignUp } from "@clerk/clerk-react";
-import { useNavigate } from "react-router-dom";
-import { Loader2, Mail, CheckCircle, XCircle } from "lucide-react";
+import { Loader2, Mail, CheckCircle } from "lucide-react";
 
 const VerifyEmailPage = () => {
 	const [code, setCode] = useState("");
@@ -13,7 +12,6 @@ const VerifyEmailPage = () => {
 	const [isVerified, setIsVerified] = useState(false);
 
 	const { signUp, isLoaded } = useSignUp();
-	const navigate = useNavigate();
 
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
@@ -63,7 +61,7 @@ const VerifyEmailPage = () => {
 		try {
 			await signUp.prepareEmailAddressVerification({ strategy: "email_code" });
 			setError("Verification code resent! Check your email.");
-		} catch (err: any) {
+		} catch {
 			setError("Failed to resend code. Please try again.");
 		} finally {
 			setIsLoading(false);

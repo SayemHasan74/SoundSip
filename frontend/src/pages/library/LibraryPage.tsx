@@ -2,9 +2,7 @@ import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { usePlaylistStore } from '@/stores/usePlaylistStore';
 import { useMusicStore } from '@/stores/useMusicStore';
 import { usePlayerStore } from '@/stores/usePlayerStore';
@@ -23,7 +21,6 @@ import {
 	Play, 
 	MoreHorizontal,
 	Music,
-	Disc3,
 	X,
 	Loader2
 } from 'lucide-react';
@@ -51,7 +48,7 @@ const LibraryPage = () => {
 		isLoading: playlistsLoading 
 	} = usePlaylistStore();
 	
-	const { albums, fetchAlbums, isLoading: albumsLoading, getLibraryAlbums, libraryAlbums } = useMusicStore();
+	const { isLoading: albumsLoading, getLibraryAlbums, libraryAlbums } = useMusicStore();
 	const { playAlbum } = usePlayerStore();
 	const { favorites, getFavorites, isLoading: favoritesLoading } = useFavoritesStore();
 	const { history, getListeningHistory, isLoading: historyLoading } = useListeningHistoryStore();
@@ -180,57 +177,10 @@ const LibraryPage = () => {
 		playAlbum([songData]);
 	};
 
-	const formatDuration = (minutes: number) => {
-		if (!minutes || minutes <= 0) return "0:00";
-		const mins = Math.floor(minutes);
-		const secs = Math.round((minutes - mins) * 60);
-		return `${mins}:${secs.toString().padStart(2, "0")}`;
-	};
-
 	const getLikedSongsImage = () => {
 		return (
 			<div className="w-12 h-12 rounded-md bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center">
 				<Heart className="w-6 h-6 text-white fill-white" />
-			</div>
-		);
-	};
-
-	const getPlaylistImage = (playlist: any) => {
-		if (playlist.imageUrl) {
-			return (
-				<img 
-					src={playlist.imageUrl} 
-					alt={playlist.name}
-					className="w-12 h-12 rounded-md object-cover"
-				/>
-			);
-		}
-		
-		if (playlist.songs && playlist.songs.length > 0) {
-			const songImages = playlist.songs
-				.slice(0, 4)
-				.map((song: any) => song.imageUrl)
-				.filter(Boolean);
-			
-			if (songImages.length > 0) {
-				return (
-					<div className="w-12 h-12 rounded-md grid grid-cols-2 gap-0.5 overflow-hidden">
-						{songImages.slice(0, 4).map((image: string, index: number) => (
-							<img 
-								key={index}
-								src={image} 
-								alt=""
-								className="w-full h-full object-cover"
-							/>
-						))}
-					</div>
-				);
-			}
-		}
-		
-		return (
-			<div className="w-12 h-12 rounded-md bg-zinc-700 flex items-center justify-center">
-				<Music className="w-6 h-6 text-zinc-400" />
 			</div>
 		);
 	};

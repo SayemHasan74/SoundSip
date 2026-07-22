@@ -3,11 +3,10 @@ import SectionGridSkeleton from "./SectionGridSkeleton";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
 import PlayButton from "./PlayButton";
 import { useFavoritesStore } from "@/stores/useFavoritesStore";
-import { Play, Heart, Clock, ArrowRight, MoreHorizontal, Plus } from "lucide-react";
+import { Play, Heart, Clock, ArrowRight, Plus } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import AddToPlaylistModal from "@/components/playlist/AddToPlaylistModal";
 

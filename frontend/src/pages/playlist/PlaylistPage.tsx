@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { 
@@ -41,9 +40,8 @@ const PlaylistPage = () => {
 	const [showRenameModal, setShowRenameModal] = useState(false);
 	const [newPlaylistName, setNewPlaylistName] = useState('');
 	const [isRenaming, setIsRenaming] = useState(false);
-	const [isPlaylistLiked, setIsPlaylistLiked] = useState(false);
 	
-	const { getPlaylistById, updatePlaylist, deletePlaylist, removeSongFromPlaylist, checkPlaylistLikeStatus, likePlaylist, unlikePlaylist } = usePlaylistStore();
+	const { getPlaylistById, updatePlaylist, deletePlaylist, removeSongFromPlaylist } = usePlaylistStore();
 	const { 
 		currentSong, 
 		isPlaying, 
@@ -450,7 +448,6 @@ const PlaylistPage = () => {
 				) : (
 					playlist.songs.map((song: any, index: number) => {
 						const isCurrentSong = currentSong?._id === song._id;
-						const isPlayingCurrent = isCurrentSong && isPlaying;
 						const isFavorited = songFavoriteStatus[song._id];
 
 						return (

@@ -53,7 +53,7 @@ const FriendsActivity = () => {
 		if (!user) {
 			// Extract song info for the modal
 			const songInfo = activity.replace("Playing ", "");
-			const [title, artist] = songInfo.split(" by ");
+			const [title] = songInfo.split(" by ");
 			setSelectedSongInfo({ title, imageUrl: undefined }); // We don't have imageUrl from activity
 			setShowLoginModal(true);
 			return;

@@ -15,9 +15,6 @@ import {
 	Mic, 
 	Heart, 
 	Plus,
-	Clock,
-	Users,
-	Crown,
 	LogOut
 } from "lucide-react";
 import { useMusicStore } from "@/stores/useMusicStore";
@@ -26,7 +23,6 @@ import { usePlaylistStore } from "@/stores/usePlaylistStore";
 import { useFavoritesStore } from "@/stores/useFavoritesStore";
 import { SignedIn, SignedOut, useUser } from "@clerk/clerk-react";
 import { ScrollArea } from "./ui/scroll-area";
-import { Separator } from "./ui/separator";
 
 const MobileNav = () => {
 	const [isOpen, setIsOpen] = useState(false);

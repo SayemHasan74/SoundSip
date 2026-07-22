@@ -7,7 +7,6 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Progress } from "@/components/ui/progress";
 import { usePlayerStore } from "@/stores/usePlayerStore";
 import { useFriendStore } from "@/stores/useFriendStore";
 import { useFollowStore } from "@/stores/useFollowStore";
@@ -15,15 +14,12 @@ import VerifiedBadge from "@/components/ui/VerifiedBadge";
 import { 
 	ArrowLeft, 
 	Edit, 
-	Heart, 
 	Share2, 
 	MessageCircle, 
-	Users, 
 	Headphones, 
 	Music,
 	Loader2,
 	MoreHorizontal,
-	Settings,
 	UserPlus,
 	UserMinus,
 	Instagram,
@@ -37,8 +33,7 @@ import {
 	Star,
 	Activity,
 	Calendar,
-	Target,
-	Zap
+	Target
 } from "lucide-react";
 import { axiosInstance } from "@/lib/axios";
 import toast from "react-hot-toast";
@@ -711,7 +706,7 @@ const UserProfilePage = () => {
 							{/* Enhanced Favorites */}
 							<div className="md:col-span-2 lg:col-span-1">
 								<div className="bg-gradient-to-br from-emerald-500/10 to-blue-500/10 border border-emerald-500/30 rounded-xl p-1">
-									<FavoritesSection userId={id || ""} />
+									<FavoritesSection />
 								</div>
 							</div>
 

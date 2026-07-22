@@ -60,7 +60,6 @@ const ArtistSignupPage = () => {
 	const [profileImage, setProfileImage] = useState<File | null>(null);
 	const [imagePreview, setImagePreview] = useState<string>("");
 	const [artistDocuments, setArtistDocuments] = useState<File[]>([]);
-	const [documentPreviews, setDocumentPreviews] = useState<string[]>([]);
 	const [isLoading, setIsLoading] = useState(false);
 	const [isLoadingProfile, setIsLoadingProfile] = useState(true);
 	const [error, setError] = useState("");
@@ -99,7 +98,7 @@ const ArtistSignupPage = () => {
 						fullName: user.fullName || ""
 					}));
 				}
-			} catch (error) {
+			} catch {
 				// If no artist profile exists, this is a new signup
 				setFormData(prev => ({
 					...prev,
@@ -164,20 +163,10 @@ const ArtistSignupPage = () => {
 		});
 
 		setArtistDocuments(prev => [...prev, ...validFiles]);
-		
-		// Create previews for new documents
-		validFiles.forEach(file => {
-			const reader = new FileReader();
-			reader.onload = () => {
-				setDocumentPreviews(prev => [...prev, reader.result as string]);
-			};
-			reader.readAsDataURL(file);
-		});
 	};
 
 	const removeDocument = (index: number) => {
 		setArtistDocuments(prev => prev.filter((_, i) => i !== index));
-		setDocumentPreviews(prev => prev.filter((_, i) => i !== index));
 	};
 
 	const validateForm = () => {
@@ -233,7 +222,7 @@ const ArtistSignupPage = () => {
 			}
 
 			// Add documents
-			artistDocuments.forEach((doc, index) => {
+			artistDocuments.forEach((doc) => {
 				submitData.append(`artistDocuments`, doc);
 			});
 
@@ -247,7 +236,7 @@ const ArtistSignupPage = () => {
 				documentCount: artistDocuments.length
 			});
 
-			const response = await axiosInstance.post("/artists/profile", submitData, {
+			await axiosInstance.post("/artists/profile", submitData, {
 				headers: {
 					"Content-Type": "multipart/form-data",
 				},

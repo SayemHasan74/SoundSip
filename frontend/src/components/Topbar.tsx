@@ -1,5 +1,5 @@
 import { SignedOut, UserButton } from "@clerk/clerk-react";
-import { LayoutDashboardIcon, Bell, Users, Settings, Search, X, TrendingUp, Menu } from "lucide-react";
+import { LayoutDashboardIcon, Search, X, TrendingUp } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import SignInOAuthButtons from "./SignInOAuthButtons";
 import { useAuthStore } from "@/stores/useAuthStore";
@@ -10,12 +10,11 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useMusicStore } from "@/stores/useMusicStore";
 
-import { useProfileStore } from "@/stores/useProfileStore";
 import MobileNav from "./MobileNav";
-import { useState, useEffect, useMemo } from "react";
+import { useState, useMemo } from "react";
 import { axiosInstance } from "@/lib/axios";
 import { Button } from "./ui/button";
-import { Sheet, SheetContent, SheetTrigger } from "./ui/sheet";
+import { Sheet, SheetContent } from "./ui/sheet";
 
 interface SearchSuggestion {
 	id: string;

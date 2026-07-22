@@ -12,8 +12,6 @@ import {
 	Shield, 
 	FileText,
 	Instagram,
-	Twitter,
-	Youtube,
 	Music,
 	Star
 } from "lucide-react";
@@ -34,7 +32,6 @@ const ArtistVerificationPage = () => {
 	const [verificationStatus, setVerificationStatus] = useState<VerificationStatus | null>(null);
 	const [isLoading, setIsLoading] = useState(true);
 	const [isSubmitting, setIsSubmitting] = useState(false);
-	const [error, setError] = useState("");
 
 	useEffect(() => {
 		if (user) {
@@ -51,8 +48,6 @@ const ArtistVerificationPage = () => {
 			if (err.response?.status === 400) {
 				// User is not an artist yet
 				setVerificationStatus(null);
-			} else {
-				setError("Failed to fetch verification status");
 			}
 		} finally {
 			setIsLoading(false);

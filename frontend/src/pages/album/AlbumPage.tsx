@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { Play, Pause, Shuffle, Heart, Share2, Plus, Clock } from 'lucide-react';
+import { Play, Pause, Shuffle, Heart, Share2, Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useMusicStore } from '@/stores/useMusicStore';
@@ -120,18 +120,6 @@ const AlbumPage = () => {
 		}
 	};
 
-	const handleShufflePlay = () => {
-		if (!currentAlbum?.songs || currentAlbum.songs.length === 0) {
-			showNotification('No songs available to play', 'error');
-			return;
-		}
-		
-		// Create a shuffled copy of the songs
-		const shuffledSongs = [...currentAlbum.songs].sort(() => Math.random() - 0.5);
-		playAlbum(shuffledSongs);
-		showNotification(`Playing ${currentAlbum.title} on shuffle`);
-	};
-
 	const handlePlayAlbum = () => {
 		if (!currentAlbum?.songs || currentAlbum.songs.length === 0) {
 			showNotification('No songs available to play', 'error');
@@ -179,18 +167,6 @@ const AlbumPage = () => {
 				document.body.removeChild(notification);
 			}, 3000);
 		}
-	};
-
-	const handleAddToPlaylist = () => {
-		// TODO: Implement add to playlist functionality
-		console.log("Add album to playlist:", currentAlbum?.title);
-		showNotification(`Added ${currentAlbum?.title} to playlist!`);
-	};
-
-	const handleLikeAlbum = () => {
-		// TODO: Implement like album functionality
-		console.log("Like album:", currentAlbum?.title);
-		showNotification(`Liked ${currentAlbum?.title}!`);
 	};
 
 	const handleSongLike = async (song: any) => {

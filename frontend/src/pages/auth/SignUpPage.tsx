@@ -3,7 +3,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useSignUp } from "@clerk/clerk-react";
-import { useNavigate } from "react-router-dom";
 import { Eye, EyeOff, Loader2, Music } from "lucide-react";
 import { Link } from "react-router-dom";
 
@@ -17,7 +16,6 @@ const SignUpPage = () => {
 	const [error, setError] = useState("");
 
 	const { signUp, isLoaded } = useSignUp();
-	const navigate = useNavigate();
 
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();

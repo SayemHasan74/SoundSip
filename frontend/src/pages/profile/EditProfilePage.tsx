@@ -172,7 +172,7 @@ const EditProfilePage = () => {
 			});
 
 			// Debug: Log FormData contents
-			for (let [key, value] of submitData.entries()) {
+			for (const [key, value] of submitData.entries()) {
 				console.log(`📋 FormData: ${key} =`, value);
 			}
 

@@ -3,7 +3,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Loader2, UserPlus, UserMinus } from "lucide-react";
+import { Loader2, UserPlus } from "lucide-react";
 import { axiosInstance } from "@/lib/axios";
 import toast from "react-hot-toast";
 
@@ -103,19 +103,6 @@ const FollowersModal = ({
 		} catch (error) {
 			console.error("Error following user:", error);
 			toast.error("Failed to follow user");
-		}
-	};
-
-	const handleUnfollow = async (targetUserId: string) => {
-		try {
-			await axiosInstance.delete(`/users/${targetUserId}/follow`);
-			toast.success("Unfollowed successfully");
-			// Refresh the lists
-			fetchFollowers();
-			fetchFollowing();
-		} catch (error) {
-			console.error("Error unfollowing user:", error);
-			toast.error("Failed to unfollow user");
 		}
 	};
 

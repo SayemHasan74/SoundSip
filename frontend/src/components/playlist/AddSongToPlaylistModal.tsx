@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Music, Search, Plus, Play, Heart } from 'lucide-react';
+import { Music, Search, Heart } from 'lucide-react';
 import { useMusicStore } from '@/stores/useMusicStore';
 import { usePlaylistStore } from '@/stores/usePlaylistStore';
 import { useFavoritesStore } from '@/stores/useFavoritesStore';

@@ -4,7 +4,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Image, Music, Upload, X } from 'lucide-react';
+import { Music, Upload, X } from 'lucide-react';
 import { usePlaylistStore } from '@/stores/usePlaylistStore';
 import { toast } from 'react-hot-toast';
 
@@ -17,7 +17,6 @@ const CreatePlaylistModal = ({ isOpen, onClose }: CreatePlaylistModalProps) => {
 	const [name, setName] = useState('');
 	const [description, setDescription] = useState('');
 	const [isPublic, setIsPublic] = useState(true);
-	const [coverImage, setCoverImage] = useState<File | null>(null);
 	const [previewUrl, setPreviewUrl] = useState<string>('');
 	const [isLoading, setIsLoading] = useState(false);
 	
@@ -38,8 +37,6 @@ const CreatePlaylistModal = ({ isOpen, onClose }: CreatePlaylistModalProps) => {
 				return;
 			}
 			
-			setCoverImage(file);
-			
 			// Create preview URL
 			const url = URL.createObjectURL(file);
 			setPreviewUrl(url);
@@ -47,7 +44,6 @@ const CreatePlaylistModal = ({ isOpen, onClose }: CreatePlaylistModalProps) => {
 	};
 
 	const removeImage = () => {
-		setCoverImage(null);
 		setPreviewUrl('');
 	};
 
@@ -69,7 +65,6 @@ const CreatePlaylistModal = ({ isOpen, onClose }: CreatePlaylistModalProps) => {
 			setName('');
 			setDescription('');
 			setIsPublic(true);
-			setCoverImage(null);
 			setPreviewUrl('');
 			
 			onClose();
@@ -86,7 +81,6 @@ const CreatePlaylistModal = ({ isOpen, onClose }: CreatePlaylistModalProps) => {
 			setName('');
 			setDescription('');
 			setIsPublic(true);
-			setCoverImage(null);
 			setPreviewUrl('');
 			onClose();
 		}

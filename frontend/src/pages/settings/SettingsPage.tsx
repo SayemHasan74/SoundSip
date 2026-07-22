@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -64,7 +64,7 @@ const SettingsPage: React.FC = () => {
 						importSettings(importedSettings);
 						setOriginalSettings(importedSettings);
 						setHasUnsavedChanges(false);
-					} catch (error) {
+					} catch {
 						toast.error("Invalid settings file");
 					}
 				};

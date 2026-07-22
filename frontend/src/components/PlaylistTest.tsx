@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { usePlaylistStore } from '@/stores/usePlaylistStore';
-import { toast } from 'react-hot-toast';
 
 const PlaylistTest = () => {
 	const [testResults, setTestResults] = useState<string[]>([]);
@@ -77,4 +76,3 @@ const PlaylistTest = () => {
 };
 
 export default PlaylistTest;
-

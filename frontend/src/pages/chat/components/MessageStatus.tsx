@@ -28,23 +28,6 @@ const MessageStatus = ({ status, timestamp, compact = false, className }: Messag
 		}
 	};
 
-	const getStatusText = () => {
-		switch (status) {
-			case "sending":
-				return "Sending...";
-			case "sent":
-				return "Sent";
-			case "delivered":
-				return "Delivered";
-			case "read":
-				return "Read";
-			case "failed":
-				return "Failed to send";
-			default:
-				return "";
-		}
-	};
-
 	const getStatusColor = () => {
 		switch (status) {
 			case "sending":

@@ -1,7 +1,6 @@
-import { useState, useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { 
 	Play, 
 	Pause, 
@@ -248,7 +247,6 @@ const LikedSongsPage = () => {
 				) : (
 					likedSongsPlaylist.songs.map((song: any, index: number) => {
 						const isCurrentSong = currentSong?._id === song._id;
-						const isPlayingCurrent = isCurrentSong && isPlaying;
 
 						return (
 							<div

@@ -1,17 +1,11 @@
 import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Headphones, Clock, Music, User, Play, Calendar } from 'lucide-react';
+import { Headphones, Clock, Music, User, Calendar } from 'lucide-react';
 
-interface ListeningHistorySectionProps {
-	userId: string;
-}
-
-const ListeningHistorySection = ({ userId }: ListeningHistorySectionProps) => {
+const ListeningHistorySection = () => {
 	const [activeTab, setActiveTab] = useState<'recent' | 'history' | 'stats'>('recent');
 	const [period, setPeriod] = useState<'all' | 'week' | 'month' | 'year'>('all');
 

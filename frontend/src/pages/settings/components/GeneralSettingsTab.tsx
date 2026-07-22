@@ -4,7 +4,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { useSettingsStore } from "@/stores/useSettingsStore";
-import { Globe, Moon, Bell, Shield, Eye, MessageSquare } from "lucide-react";
+import { Globe, Bell, Shield } from "lucide-react";
 
 const GeneralSettingsTab: React.FC = () => {
 	const { settings, updateGeneralSettings } = useSettingsStore();

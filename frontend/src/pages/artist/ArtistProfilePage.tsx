@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useParams, useNavigate } from "react-router-dom";
 import { useFollowStore } from "@/stores/useFollowStore";
@@ -9,9 +9,6 @@ import {
 	Share2, 
 	MessageCircle, 
 	Play, 
-	Pause, 
-	Users, 
-	Headphones, 
 	Calendar,
 	Instagram,
 	Twitter,
@@ -323,7 +320,7 @@ const ArtistProfilePage = () => {
 							</CardHeader>
 							<CardContent>
 								<div className="space-y-3">
-									{songs.map((song, index) => (
+									{songs.map((song) => (
 										<div
 											key={song._id}
 											className="flex items-center gap-4 p-3 rounded-lg hover:bg-zinc-700/50 transition-colors cursor-pointer group"

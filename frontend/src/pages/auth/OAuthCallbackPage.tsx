@@ -1,5 +1,4 @@
 import { useEffect } from "react";
-import { useNavigate } from "react-router-dom";
 import { useAuth } from "@clerk/clerk-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Loader, CheckCircle } from "lucide-react";
@@ -7,7 +6,6 @@ import { useState } from "react";
 
 const OAuthCallbackPage = () => {
 	const { isLoaded, isSignedIn } = useAuth();
-	const navigate = useNavigate();
 	const [status, setStatus] = useState<"loading" | "success" | "error">("loading");
 
 	useEffect(() => {

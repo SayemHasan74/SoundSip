@@ -253,7 +253,7 @@ export const useMusicStore = create<MusicStore>((set, get) => ({
 					console.log(`🔍 Backend search found ${response.data.length} songs for: "${query}"`);
 					return response.data;
 				}
-			} catch (error) {
+			} catch {
 				// If backend search fails, fall back to client-side search
 				console.log("Backend search failed, using client-side search");
 			}

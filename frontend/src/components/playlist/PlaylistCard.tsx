@@ -9,8 +9,6 @@ import {
 	Edit, 
 	Trash2, 
 	Music, 
-	Clock,
-	Heart,
 	Share2
 } from 'lucide-react';
 import { usePlayerStore } from '@/stores/usePlayerStore';
@@ -257,4 +255,3 @@ const PlaylistCard = ({ playlist, onEdit, onDelete, showActions = true }: Playli
 };
 
 export default PlaylistCard;
-

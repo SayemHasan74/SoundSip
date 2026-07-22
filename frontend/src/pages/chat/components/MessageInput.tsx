@@ -10,7 +10,6 @@ import {
 	X, 
 	Music, 
 	Smile,
-	Mic,
 	Upload,
 	FileImage
 } from "lucide-react";
@@ -64,7 +63,7 @@ const MessageInput = ({ replyingToMessageId, onCancelReply }: MessageInputProps 
 
 	// Close playlist picker when clicking outside
 	useEffect(() => {
-		const handleClickOutside = (event: MouseEvent) => {
+		const handleClickOutside = () => {
 			if (showPlaylistPicker) {
 				setShowPlaylistPicker(false);
 			}
@@ -227,12 +226,6 @@ const MessageInput = ({ replyingToMessageId, onCancelReply }: MessageInputProps 
 			onDragLeave={handleDragLeave}
 			onDrop={handleDrop}
 		>
-			{/* Debug info */}
-			<div className="text-xs text-zinc-500 mb-2">
-				Debug: User={!!user}, SelectedUser={!!selectedUser}, Playlists={playlists.length}
-				<br />
-				Test: Click the "T" button to test functionality
-			</div>
 			{/* Reply preview */}
 			{replyingToMessageId && (
 				<div className="mb-2 sm:mb-3 p-2 sm:p-3 bg-zinc-800/50 rounded-lg border-l-4 border-green-500">
@@ -309,20 +302,6 @@ const MessageInput = ({ replyingToMessageId, onCancelReply }: MessageInputProps 
 
 				{/* Action buttons - responsive sizing */}
 				<div className="flex items-center gap-0.5 sm:gap-1 flex-shrink-0 relative z-10">
-					{/* Test button */}
-					<Button
-						size="icon"
-						variant="ghost"
-						onClick={() => {
-							console.log("Test button clicked");
-							toast.success("Test button works!");
-						}}
-						className="h-9 w-9 sm:h-10 sm:w-10 md:h-11 md:w-11 rounded-full hover:bg-white/10 transition-all duration-200 cursor-pointer"
-						title="Test button"
-						type="button"
-					>
-						<span className="text-xs">T</span>
-					</Button>
 					{/* Image button */}
 					<Button
 						size="icon"

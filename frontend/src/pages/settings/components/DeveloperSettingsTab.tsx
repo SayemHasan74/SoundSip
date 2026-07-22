@@ -1,12 +1,11 @@
 import React from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Slider } from "@/components/ui/slider";
 import { Input } from "@/components/ui/input";
 import { useSettingsStore } from "@/stores/useSettingsStore";
-import { Code, Zap, Settings, Bug, Activity, Database, ExternalLink } from "lucide-react";
+import { Code, Zap, Settings, Bug, Activity, ExternalLink } from "lucide-react";
 
 const DeveloperSettingsTab: React.FC = () => {
 	const { settings, updateDeveloperSettings } = useSettingsStore();

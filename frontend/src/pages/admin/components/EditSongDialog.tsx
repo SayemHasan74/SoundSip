@@ -12,7 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useMusicStore } from "@/stores/useMusicStore";
 import { Song } from "@/types";
-import { Edit, Upload, Loader2 } from "lucide-react";
+import { Edit, Loader2 } from "lucide-react";
 import { useRef, useState } from "react";
 import toast from "react-hot-toast";
 import ArtistAutocomplete from "@/components/ArtistAutocomplete";
@@ -23,7 +23,7 @@ interface EditSongDialogProps {
 }
 
 const EditSongDialog = ({ song }: EditSongDialogProps) => {
-	const { albums, updateSong, fetchSongs } = useMusicStore();
+	const { albums, updateSong } = useMusicStore();
 	const [editDialogOpen, setEditDialogOpen] = useState(false);
 	const [isLoading, setIsLoading] = useState(false);
 
@@ -391,4 +391,3 @@ const EditSongDialog = ({ song }: EditSongDialogProps) => {
 };
 
 export default EditSongDialog;
-

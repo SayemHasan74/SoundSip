@@ -5,9 +5,9 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
-import { Check, X, Eye, MessageSquare, FileText, Trash2, Music, Instagram, Twitter, Youtube, Globe } from "lucide-react";
+import { Check, X, Eye, FileText, Trash2 } from "lucide-react";
 import {
 	Table,
 	TableBody,
@@ -57,7 +57,7 @@ const ArtistsTabContent = () => {
 		try {
 			const response = await axiosInstance.get("/admin/artist-applications");
 			setApplications(response.data.applications);
-		} catch (error) {
+		} catch {
 			toast.error("Failed to fetch artist applications");
 		} finally {
 			setIsLoading(false);
@@ -78,7 +78,7 @@ const ArtistsTabContent = () => {
 			await axiosInstance.post(`/admin/artist-applications/${id}/approve`);
 			toast.success("Artist approved successfully");
 			fetchApplications(); // Refresh the list
-		} catch (error) {
+		} catch {
 			toast.error("Failed to approve artist");
 		}
 	};
@@ -101,7 +101,7 @@ const ArtistsTabContent = () => {
 			setRejectingId(null);
 			setRejectFeedback("");
 			fetchApplications(); // Refresh the list
-		} catch (error) {
+		} catch {
 			toast.error("Failed to reject artist");
 		}
 	};
@@ -115,7 +115,7 @@ const ArtistsTabContent = () => {
 			await axiosInstance.delete(`/admin/artist-applications/${id}/delete`);
 			toast.success("Artist deleted successfully");
 			fetchApplications(); // Refresh the list
-		} catch (error) {
+		} catch {
 			toast.error("Failed to delete artist");
 		}
 	};

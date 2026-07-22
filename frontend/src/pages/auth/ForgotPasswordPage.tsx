@@ -3,7 +3,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useSignIn } from "@clerk/clerk-react";
-import { useNavigate } from "react-router-dom";
 import { Loader2, Mail, ArrowLeft, CheckCircle, Lock, Eye, EyeOff } from "lucide-react";
 
 const ForgotPasswordPage = () => {
@@ -17,7 +16,6 @@ const ForgotPasswordPage = () => {
 	const [isOtpVerified, setIsOtpVerified] = useState(false);
 
 	const { signIn, isLoaded } = useSignIn();
-	const navigate = useNavigate();
 
 	const handleSendOtp = async (e: React.FormEvent) => {
 		e.preventDefault();
@@ -96,7 +94,7 @@ const ForgotPasswordPage = () => {
 				identifier: email,
 			});
 			setError("Reset OTP resent! Check your email.");
-		} catch (err: any) {
+		} catch {
 			setError("Failed to resend OTP. Please try again.");
 		} finally {
 			setIsLoading(false);

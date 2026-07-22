@@ -1,9 +1,8 @@
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
-import { Mic, Play, Heart, MessageCircle, Users, CheckCircle, ArrowRight } from "lucide-react";
+import { Play, Heart, MessageCircle, Users, CheckCircle, ArrowRight } from "lucide-react";
 
 type Artist = {
 	_id: string;

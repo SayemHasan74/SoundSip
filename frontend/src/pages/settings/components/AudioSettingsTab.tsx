@@ -5,7 +5,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Switch } from "@/components/ui/switch";
 import { Slider } from "@/components/ui/slider";
 import { useSettingsStore } from "@/stores/useSettingsStore";
-import { Volume2, Play, Monitor, Music } from "lucide-react";
+import { Volume2, Play, Monitor } from "lucide-react";
 
 const AudioSettingsTab: React.FC = () => {
 	const { settings, updateAudioSettings } = useSettingsStore();

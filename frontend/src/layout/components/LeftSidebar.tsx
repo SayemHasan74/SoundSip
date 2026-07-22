@@ -7,13 +7,13 @@ import { useMusicStore } from "@/stores/useMusicStore";
 import { usePlaylistStore } from "@/stores/usePlaylistStore";
 import { useFavoritesStore } from "@/stores/useFavoritesStore";
 import { SignedIn, useUser } from "@clerk/clerk-react";
-import { HomeIcon, Library, MessageCircle, Plus, Search, Clock, Mic, User, Crown, Settings, Heart, Music, X } from "lucide-react";
+import { HomeIcon, Library, MessageCircle, Plus, Search, Clock, Mic, User, Heart, Music, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { useFavoritesSync } from "@/hooks/useFavoritesSync";
 
 const LeftSidebar = () => {
-	const { albums, fetchAlbums, isLoading: albumsLoading, getLibraryAlbums, libraryAlbums } = useMusicStore();
+	const { fetchAlbums, getLibraryAlbums, libraryAlbums } = useMusicStore();
 	const { 
 		playlists, 
 		likedSongsPlaylist, 
@@ -22,7 +22,7 @@ const LeftSidebar = () => {
 		getLikedSongsPlaylist,
 		isLoading: playlistsLoading 
 	} = usePlaylistStore();
-	const { favorites, getFavorites, isLoading: favoritesLoading } = useFavoritesStore();
+	const { favorites, getFavorites } = useFavoritesStore();
 	const { user } = useUser();
 	const [activeFilter, setActiveFilter] = useState('all');
 	const [searchQuery, setSearchQuery] = useState('');

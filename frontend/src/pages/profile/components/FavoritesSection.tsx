@@ -4,15 +4,11 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Heart, Music, Disc, User, Play, Clock } from 'lucide-react';
+import { Heart, Music, Disc, User, Clock } from 'lucide-react';
 import { useFavoritesStore } from '@/stores/useFavoritesStore';
 import { usePlayerStore } from '@/stores/usePlayerStore';
 
-interface FavoritesSectionProps {
-	userId: string;
-}
-
-const FavoritesSection = ({ userId }: FavoritesSectionProps) => {
+const FavoritesSection = () => {
 	const [activeTab, setActiveTab] = useState<'all' | 'songs' | 'albums' | 'artists'>('all');
 	const { favorites, isLoading, getFavorites, removeFromFavorites } = useFavoritesStore();
 	const { playAlbum } = usePlayerStore();

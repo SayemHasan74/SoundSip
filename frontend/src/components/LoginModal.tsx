@@ -1,8 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { X } from "lucide-react";
-import { useUser } from "@clerk/clerk-react";
-import { useSignIn } from "@clerk/clerk-react";
 import { useNavigate } from "react-router-dom";
 
 interface LoginModalProps {
@@ -13,7 +11,6 @@ interface LoginModalProps {
 }
 
 const LoginModal = ({ isOpen, onClose, songTitle = "Music", albumCover }: LoginModalProps) => {
-	const { signIn } = useSignIn();
 	const navigate = useNavigate();
 
 	const handleSignIn = () => {

@@ -1,9 +1,10 @@
-import { useState, useEffect, useRef } from "react";
-import { useSearchParams, useNavigate, Link } from "react-router-dom";
+import { useEffect, useRef } from "react";
+import type React from "react";
+import { useSearchParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "@/components/ui/tooltip";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -13,19 +14,14 @@ import SearchSuggestions from "@/components/SearchSuggestions";
 import { useSearch } from "@/hooks/useSearch";
 import { useChatStore } from "@/stores/useChatStore";
 import { useFavoritesStore } from "@/stores/useFavoritesStore";
-import { usePlayerStore } from "@/stores/usePlayerStore";
 import { setChatStoreUsers } from "@/lib/searchService";
 import { 
 	Search, 
 	X, 
-	Cast, 
 	Play, 
-	Clock, 
-	Mic, 
 	Heart, 
 	MoreHorizontal, 
 	Filter,
-	TrendingUp,
 	Music,
 	Users,
 	Disc3,
@@ -43,7 +39,6 @@ const SearchPage = () => {
 	const query = searchParams.get('q') || '';
 	const { users } = useChatStore();
 	const { addToFavorites, removeFromFavorites, checkFavoriteStatus } = useFavoritesStore();
-	const { playAlbum } = usePlayerStore();
 	
 	const {
 		query: searchQuery,
@@ -71,13 +66,6 @@ const SearchPage = () => {
 	}, [users]);
 
 	const searchInputRef = useRef<HTMLInputElement>(null);
-
-	// Function to handle album play
-	const handlePlayAlbum = (album: any) => {
-		if (album.songs && album.songs.length > 0) {
-			playAlbum(album.songs);
-		}
-	};
 
 	const filters: { id: SearchFilter; label: string; icon: React.ReactNode }[] = [
 		{ id: 'all', label: 'All', icon: <Search className="w-4 h-4" /> },
@@ -197,21 +185,6 @@ const SearchPage = () => {
 				<Skeleton className="h-3 w-1/2" />
 			</div>
 			<Skeleton className="h-4 w-12" />
-		</div>
-	);
-
-	const ArtistSkeleton = () => (
-		<div className="flex flex-col items-center gap-3 min-w-[120px]">
-			<Skeleton className="w-20 h-20 rounded-full" />
-			<Skeleton className="h-4 w-16" />
-		</div>
-	);
-
-	const AlbumSkeleton = () => (
-		<div className="space-y-3">
-			<Skeleton className="w-full aspect-square rounded-md" />
-			<Skeleton className="h-4 w-3/4" />
-			<Skeleton className="h-3 w-1/2" />
 		</div>
 	);
 

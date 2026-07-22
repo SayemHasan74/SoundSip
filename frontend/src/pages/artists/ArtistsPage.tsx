@@ -11,13 +11,11 @@ import {
 	Users, 
 	Play, 
 	Heart,
-	ArrowRight,
 	Filter,
 	Verified
 } from 'lucide-react';
 import { useArtistStore } from '@/stores/useArtistStore';
 import { useFollowStore } from '@/stores/useFollowStore';
-import { toast } from 'react-hot-toast';
 
 const ArtistsPage = () => {
 	const navigate = useNavigate();
@@ -55,14 +53,14 @@ const ArtistsPage = () => {
 		for (const artist of artists) {
 			try {
 				statuses[artist._id] = await checkFollowStatus(artist._id);
-			} catch (error) {
-				statuses[artist._id] = false;
-			}
+		} catch {
+			statuses[artist._id] = false;
+		}
 		}
 		setFollowStatuses(statuses);
 	};
 
-	const handleFollow = async (artistId: string, artistName: string) => {
+	const handleFollow = async (artistId: string) => {
 		try {
 			const isFollowing = followStatuses[artistId];
 			if (isFollowing) {
@@ -269,7 +267,7 @@ const ArtistsPage = () => {
 												}`}
 												onClick={(e) => {
 													e.stopPropagation();
-													handleFollow(artist._id, artist.artistName);
+													handleFollow(artist._id);
 												}}
 											>
 												<Heart className={`w-4 h-4 mr-2 ${followStatuses[artist._id] ? 'fill-current' : ''}`} />
