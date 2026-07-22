@@ -15,6 +15,7 @@ import VerifiedBadge from "@/components/ui/VerifiedBadge";
 import FriendRequestsPanel from "@/components/FriendRequestsPanel";
 import FriendsList from "@/components/FriendsList";
 import { axiosInstance } from "@/lib/axios";
+import { useNotificationStore } from "@/stores/useNotificationStore";
 
 const FriendsActivity = () => {
 	const { users, fetchUsers, onlineUsers, userActivities } = useChatStore();
@@ -23,6 +24,7 @@ const FriendsActivity = () => {
 	const { searchSongs } = useMusicStore();
 	const { currentSong, isPlaying, setCurrentSong, togglePlay } = usePlayerStore();
 	const { friends, getFriendsList } = useFriendStore();
+	const { unreadFriendRequests, unreadMessagesByUser, clearFriendRequests } = useNotificationStore();
 	const [activeTab, setActiveTab] = useState<'activity' | 'requests' | 'friends' | 'search'>('activity');
 	const [isExpanded, setIsExpanded] = useState(true);
 	const [showLoginModal, setShowLoginModal] = useState(false);
@@ -209,6 +211,15 @@ const FriendsActivity = () => {
 		setSearchResults([]);
 	};
 
+	const unreadMessageCount = Object.values(unreadMessagesByUser).reduce((total, count) => total + count, 0);
+
+	const handleTabChange = (tab: 'activity' | 'requests' | 'friends' | 'search') => {
+		setActiveTab(tab);
+		if (tab === 'requests') {
+			clearFriendRequests();
+		}
+	};
+
 	return (
 		<div className='h-full bg-zinc-900 rounded-lg flex flex-col'>
 			<div className='p-4 flex justify-between items-center border-b border-zinc-800'>
@@ -236,7 +247,7 @@ const FriendsActivity = () => {
 					{/* Tabs */}
 					<div className="flex gap-1 p-2 bg-zinc-800/30">
 						<button
-							onClick={() => setActiveTab('activity')}
+							onClick={() => handleTabChange('activity')}
 							className={`flex-1 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
 								activeTab === 'activity'
 									? 'bg-blue-600 text-white'
@@ -246,27 +257,41 @@ const FriendsActivity = () => {
 							Activity
 						</button>
 						<button
-							onClick={() => setActiveTab('requests')}
+							onClick={() => handleTabChange('requests')}
 							className={`flex-1 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
 								activeTab === 'requests'
 									? 'bg-blue-600 text-white'
 									: 'text-zinc-400 hover:text-white'
 							}`}
 						>
-							Requests
+							<span className="inline-flex items-center justify-center gap-1">
+								Requests
+								{unreadFriendRequests > 0 && (
+									<span className="min-w-5 h-5 rounded-full bg-red-500 px-1.5 text-xs text-white">
+										{unreadFriendRequests}
+									</span>
+								)}
+							</span>
 						</button>
 						<button
-							onClick={() => setActiveTab('friends')}
+							onClick={() => handleTabChange('friends')}
 							className={`flex-1 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
 								activeTab === 'friends'
 									? 'bg-blue-600 text-white'
 									: 'text-zinc-400 hover:text-white'
 							}`}
 						>
-							Friends
+							<span className="inline-flex items-center justify-center gap-1">
+								Friends
+								{unreadMessageCount > 0 && (
+									<span className="min-w-5 h-5 rounded-full bg-emerald-500 px-1.5 text-xs text-white">
+										{unreadMessageCount}
+									</span>
+								)}
+							</span>
 						</button>
 						<button
-							onClick={() => setActiveTab('search')}
+							onClick={() => handleTabChange('search')}
 							className={`flex-1 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
 								activeTab === 'search'
 									? 'bg-blue-600 text-white'

@@ -3,6 +3,8 @@ import { Message, User } from "@/types";
 import { create } from "zustand";
 import { io } from "socket.io-client";
 import toast from "react-hot-toast";
+import { useFriendStore } from "@/stores/useFriendStore";
+import { useNotificationStore } from "@/stores/useNotificationStore";
 
 interface ChatStore {
 	users: User[];
@@ -140,6 +142,53 @@ export const useChatStore = create<ChatStore>((set, get) => ({
 
 					return { messages: [...state.messages, message] };
 				});
+
+				const selectedUserId = get().selectedUser?.clerkId;
+				if (message.senderId !== selectedUserId) {
+					useNotificationStore.getState().incrementMessage(message);
+					toast.success("New message received");
+				}
+			});
+
+			socket.on("friend_request_received", (request) => {
+				console.log("👥 Friend request received:", request);
+				useFriendStore.getState().addIncomingFriendRequest(request);
+				useNotificationStore.getState().incrementFriendRequests(request);
+				const senderName = request.sender?.isArtist
+					? request.sender.artistName
+					: request.sender?.fullName || "Someone";
+				toast.success(`${senderName} sent you a friend request`);
+			});
+
+			socket.on("friend_request_accepted", ({ friend }) => {
+				console.log("✅ Friend request accepted:", friend);
+				useFriendStore.getState().getFriendsList();
+				useFriendStore.getState().getSentFriendRequests();
+				const friendName = friend?.isArtist ? friend.artistName : friend?.fullName || "Someone";
+				toast.success(`${friendName} accepted your friend request`);
+			});
+
+			socket.on("friendship_created", () => {
+				console.log("🤝 Friendship created");
+				useFriendStore.getState().getFriendRequests();
+				useFriendStore.getState().getFriendsList();
+				useNotificationStore.getState().clearFriendRequests();
+			});
+
+			socket.on("friend_request_rejected", () => {
+				console.log("❌ Friend request rejected");
+				useFriendStore.getState().getSentFriendRequests();
+			});
+
+			socket.on("friend_request_cancelled", ({ requestId }) => {
+				console.log("🗑️ Friend request cancelled:", requestId);
+				useFriendStore.getState().removeIncomingFriendRequest(requestId);
+			});
+
+			socket.on("friend_removed", () => {
+				console.log("👋 Friend removed");
+				useFriendStore.getState().getFriendsList();
+				get().fetchUsers();
 			});
 
 			socket.on("activity_updated", ({ userId, activity }) => {
@@ -256,6 +305,7 @@ export const useChatStore = create<ChatStore>((set, get) => ({
 			}
 			
 			toast.error(errorMessage);
+			throw error;
 		}
 	},
 
@@ -264,6 +314,7 @@ export const useChatStore = create<ChatStore>((set, get) => ({
 		try {
 			const response = await axiosInstance.get(`/messages/${userId}`);
 			set({ messages: response.data });
+			useNotificationStore.getState().clearMessagesForUser(userId);
 		} catch (error: any) {
 			set({ error: error.response?.data?.message || "Failed to fetch messages" });
 		} finally {

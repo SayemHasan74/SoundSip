@@ -3,6 +3,15 @@ import { FriendRequest } from "../models/friendRequest.model.js";
 import { Friendship } from "../models/friendship.model.js";
 import { Follow } from "../models/follow.model.js";
 
+const emitToUser = (io, userSockets, userId, event, payload) => {
+	const sockets = userSockets?.get(userId);
+	if (!io || !sockets) return false;
+
+	const socketIds = sockets instanceof Set ? Array.from(sockets) : [sockets];
+	socketIds.forEach((socketId) => io.to(socketId).emit(event, payload));
+	return socketIds.length > 0;
+};
+
 // Send friend request
 export const sendFriendRequest = async (req, res, next) => {
 	try {
@@ -52,9 +61,18 @@ export const sendFriendRequest = async (req, res, next) => {
 
 		await friendRequest.save();
 
+		const sender = await User.findOne({ clerkId: currentUserId })
+			.select('clerkId fullName imageUrl handle isArtist artistName isVerified');
+		const friendRequestPayload = {
+			...friendRequest.toObject(),
+			sender: sender || null
+		};
+
+		emitToUser(req.io, req.userSockets, receiverId, "friend_request_received", friendRequestPayload);
+
 		res.status(201).json({
 			message: "Friend request sent successfully",
-			friendRequest
+			friendRequest: friendRequestPayload
 		});
 	} catch (error) {
 		next(error);
@@ -107,6 +125,22 @@ export const acceptFriendRequest = async (req, res, next) => {
 			{ $inc: { friendCount: 1 } }
 		);
 
+		const users = await User.find({
+			clerkId: { $in: [friendRequest.senderId, friendRequest.receiverId] }
+		}).select('clerkId fullName imageUrl handle isArtist artistName isVerified');
+		const userById = new Map(users.map((user) => [user.clerkId, user]));
+
+		emitToUser(req.io, req.userSockets, friendRequest.senderId, "friend_request_accepted", {
+			friendship,
+			friend: userById.get(friendRequest.receiverId) || null,
+			requestId: friendRequest._id,
+		});
+		emitToUser(req.io, req.userSockets, friendRequest.receiverId, "friendship_created", {
+			friendship,
+			friend: userById.get(friendRequest.senderId) || null,
+			requestId: friendRequest._id,
+		});
+
 		res.status(200).json({
 			message: "Friend request accepted",
 			friendship
@@ -137,6 +171,11 @@ export const rejectFriendRequest = async (req, res, next) => {
 		friendRequest.status = 'rejected';
 		await friendRequest.save();
 
+		emitToUser(req.io, req.userSockets, friendRequest.senderId, "friend_request_rejected", {
+			requestId: friendRequest._id,
+			receiverId: currentUserId,
+		});
+
 		res.status(200).json({
 			message: "Friend request rejected"
 		});
@@ -164,6 +203,11 @@ export const cancelFriendRequest = async (req, res, next) => {
 
 		// Delete the request
 		await FriendRequest.findByIdAndDelete(requestId);
+
+		emitToUser(req.io, req.userSockets, friendRequest.receiverId, "friend_request_cancelled", {
+			requestId: friendRequest._id,
+			senderId: currentUserId,
+		});
 
 		res.status(200).json({
 			message: "Friend request cancelled"
@@ -199,6 +243,10 @@ export const removeFriend = async (req, res, next) => {
 			{ clerkId: { $in: [currentUserId, friendId] } },
 			{ $inc: { friendCount: -1 } }
 		);
+
+		emitToUser(req.io, req.userSockets, friendId, "friend_removed", {
+			friendId: currentUserId,
+		});
 
 		res.status(200).json({
 			message: "Friend removed"

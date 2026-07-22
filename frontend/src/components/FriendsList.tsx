@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
 import { useFriendStore } from '@/stores/useFriendStore';
+import { useNotificationStore } from '@/stores/useNotificationStore';
 import { 
 	Users, 
 	UserMinus,
@@ -21,6 +22,7 @@ const FriendsList = () => {
 		removeFriend,
 		isLoading 
 	} = useFriendStore();
+	const { unreadMessagesByUser, clearMessagesForUser } = useNotificationStore();
 	const navigate = useNavigate();
 
 	useEffect(() => {
@@ -34,6 +36,11 @@ const FriendsList = () => {
 
 	const handleRemoveFriend = async (friendId: string) => {
 		await removeFriend(friendId);
+	};
+
+	const handleMessageFriend = (friendId: string) => {
+		clearMessagesForUser(friendId);
+		navigate(`/chat?user=${friendId}`);
 	};
 
 	if (isLoading) {
@@ -104,6 +111,11 @@ const FriendsList = () => {
 													Artist
 												</Badge>
 											)}
+											{unreadMessagesByUser[friend.clerkId] > 0 && (
+												<Badge className="bg-emerald-600 text-white text-xs">
+													{unreadMessagesByUser[friend.clerkId]} new
+												</Badge>
+											)}
 										</div>
 										{friend.handle && (
 											<p className="text-zinc-400 text-xs">@{friend.handle}</p>
@@ -114,7 +126,7 @@ const FriendsList = () => {
 										<Button
 											size="sm"
 											variant="outline"
-											onClick={() => navigate(`/chat?user=${friend.clerkId}`)}
+											onClick={() => handleMessageFriend(friend.clerkId)}
 											className="border-zinc-600 text-zinc-400 hover:bg-zinc-600 hover:text-white"
 										>
 											<MessageCircle className="size-3" />

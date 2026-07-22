@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { axiosInstance } from '@/lib/axios';
 import toast from 'react-hot-toast';
+import { useNotificationStore } from '@/stores/useNotificationStore';
 
 interface Friend {
 	_id: string;
@@ -40,6 +41,8 @@ interface FriendStore {
 	getFriendRequests: () => Promise<void>;
 	getSentFriendRequests: () => Promise<void>;
 	getFriendsList: () => Promise<void>;
+	addIncomingFriendRequest: (request: FriendRequest) => void;
+	removeIncomingFriendRequest: (requestId: string) => void;
 	checkFriendshipStatus: (userId: string) => Promise<{
 		status: 'none' | 'friends' | 'request_sent' | 'request_received';
 		requestId?: string;
@@ -82,6 +85,7 @@ export const useFriendStore = create<FriendStore>((set, get) => ({
 				get().getFriendRequests(),
 				get().getFriendsList()
 			]);
+			useNotificationStore.getState().clearFriendRequests();
 		} catch (error: any) {
 			console.error('Error accepting friend request:', error);
 			toast.error(error.response?.data?.message || 'Failed to accept friend request');
@@ -99,6 +103,7 @@ export const useFriendStore = create<FriendStore>((set, get) => ({
 			
 			// Refresh friend requests
 			await get().getFriendRequests();
+			useNotificationStore.getState().setFriendRequestCount(get().friendRequests.length);
 		} catch (error: any) {
 			console.error('Error rejecting friend request:', error);
 			toast.error(error.response?.data?.message || 'Failed to reject friend request');
@@ -146,7 +151,9 @@ export const useFriendStore = create<FriendStore>((set, get) => ({
 		try {
 			set({ isLoading: true });
 			const response = await axiosInstance.get('/friends/requests');
-			set({ friendRequests: response.data.friendRequests });
+			const friendRequests = response.data.friendRequests;
+			set({ friendRequests });
+			useNotificationStore.getState().setFriendRequestCount(friendRequests.length);
 		} catch (error: any) {
 			console.error('Error getting friend requests:', error);
 		} finally {
@@ -179,6 +186,23 @@ export const useFriendStore = create<FriendStore>((set, get) => ({
 		} finally {
 			set({ isLoading: false });
 		}
+	},
+
+	addIncomingFriendRequest: (request) => {
+		set((state) => {
+			if (state.friendRequests.some((existing) => existing._id === request._id)) {
+				return state;
+			}
+			return { friendRequests: [request, ...state.friendRequests] };
+		});
+	},
+
+	removeIncomingFriendRequest: (requestId) => {
+		set((state) => {
+			const friendRequests = state.friendRequests.filter((request) => request._id !== requestId);
+			useNotificationStore.getState().setFriendRequestCount(friendRequests.length);
+			return { friendRequests };
+		});
 	},
 
 	// Check friendship status

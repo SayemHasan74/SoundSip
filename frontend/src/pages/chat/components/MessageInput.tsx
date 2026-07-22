@@ -1,5 +1,4 @@
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useChatStore } from "@/stores/useChatStore";
 import { useUser } from "@clerk/clerk-react";
@@ -29,33 +28,17 @@ const MessageInput = ({ replyingToMessageId, onCancelReply }: MessageInputProps 
 	const [selectedImage, setSelectedImage] = useState<File | null>(null);
 	const [imagePreview, setImagePreview] = useState<string | null>(null);
 	const [isDragOver, setIsDragOver] = useState(false);
+	const [isSending, setIsSending] = useState(false);
 	const [showPlaylistPicker, setShowPlaylistPicker] = useState(false);
 	const [showEmojiPicker, setShowEmojiPicker] = useState(false);
 	const { user } = useUser();
-	
-	// Debug user authentication
-	useEffect(() => {
-		console.log("MessageInput: User authentication status:", !!user);
-		console.log("MessageInput: User details:", user);
-	}, [user]);
 	const { selectedUser, sendMessage } = useChatStore();
-	
-	// Debug selectedUser
-	useEffect(() => {
-		console.log("MessageInput: Selected user:", selectedUser);
-	}, [selectedUser]);
 	const { playlists, getPlaylists } = usePlaylistStore();
-	
-	// Debug playlists
-	useEffect(() => {
-		console.log("MessageInput: Playlists updated:", playlists.length, playlists);
-	}, [playlists]);
 	const fileInputRef = useRef<HTMLInputElement>(null);
 	const textareaRef = useRef<HTMLTextAreaElement>(null);
 
 	// Load playlists when component mounts
 	useEffect(() => {
-		console.log("MessageInput: Loading playlists...");
 		getPlaylists().catch(error => {
 			console.error("Error loading playlists:", error);
 		});
@@ -95,10 +78,8 @@ const MessageInput = ({ replyingToMessageId, onCancelReply }: MessageInputProps 
 	};
 
 	const handleFileInput = (e: React.ChangeEvent<HTMLInputElement>) => {
-		console.log("File input triggered:", e.target.files);
 		const file = e.target.files?.[0];
 		if (file) {
-			console.log("File selected:", file.name, file.type, file.size);
 			handleImageSelect(file);
 		}
 	};
@@ -119,13 +100,14 @@ const MessageInput = ({ replyingToMessageId, onCancelReply }: MessageInputProps 
 	};
 
 	const handleSend = async () => {
-		if (!selectedUser || !user) return;
+		if (!selectedUser || !user || isSending) return;
 		if (!newMessage.trim() && !selectedImage) {
 			toast.error("Please enter a message or select an image");
 			return;
 		}
 
 		try {
+			setIsSending(true);
 			await sendMessage(selectedUser.clerkId, user.id, newMessage.trim(), selectedImage);
 			setNewMessage("");
 			removeImage();
@@ -139,7 +121,8 @@ const MessageInput = ({ replyingToMessageId, onCancelReply }: MessageInputProps 
 			}
 		} catch (error) {
 			console.error('Error sending message:', error);
-			toast.error("Failed to send message");
+		} finally {
+			setIsSending(false);
 		}
 	};
 
@@ -148,7 +131,7 @@ const MessageInput = ({ replyingToMessageId, onCancelReply }: MessageInputProps 
 
 		try {
 			// Send a rich playlist message
-			const playlistMessage = `🎵 **${playlist.name}**\n\n` +
+							const playlistMessage = `🎵 **${playlist.name}**\n\n` +
 				`📊 ${playlist.songCount} song${playlist.songCount !== 1 ? 's' : ''}\n` +
 				`👤 Created by me\n\n` +
 				`Check out this awesome playlist! 🎧`;
@@ -307,8 +290,9 @@ const MessageInput = ({ replyingToMessageId, onCancelReply }: MessageInputProps 
 						size="icon"
 						variant="ghost"
 						onClick={() => {
-							console.log("Image button clicked");
-							toast.success("Image button clicked!");
+							if (fileInputRef.current) {
+								fileInputRef.current.value = "";
+							}
 							fileInputRef.current?.click();
 						}}
 						className="h-9 w-9 sm:h-10 sm:w-10 md:h-11 md:w-11 rounded-full hover:bg-white/10 transition-all duration-200 cursor-pointer"
@@ -324,8 +308,6 @@ const MessageInput = ({ replyingToMessageId, onCancelReply }: MessageInputProps 
 						variant="ghost"
 						onClick={() => {
 							console.log("Playlist button clicked, current state:", showPlaylistPicker);
-							console.log("Available playlists:", playlists.length);
-							toast.success("Playlist button clicked!");
 							setShowPlaylistPicker(!showPlaylistPicker);
 						}}
 						className={cn(
@@ -372,7 +354,7 @@ const MessageInput = ({ replyingToMessageId, onCancelReply }: MessageInputProps 
 					<Button 
 						size="icon" 
 						onClick={handleSend} 
-						disabled={!newMessage.trim() && !selectedImage}
+						disabled={isSending || (!newMessage.trim() && !selectedImage)}
 						className="bg-green-600 hover:bg-green-700 text-white rounded-full h-9 w-9 sm:h-10 sm:w-10 md:h-11 md:w-11 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-lg ml-1"
 						title="Send message"
 					>
@@ -424,13 +406,13 @@ const MessageInput = ({ replyingToMessageId, onCancelReply }: MessageInputProps 
 			)}
 
 			{/* Hidden file input */}
-			<Input
+			<input
 				ref={fileInputRef}
 				type="file"
 				accept="image/*"
 				onChange={handleFileInput}
-				className="hidden"
-				onClick={(e) => console.log("File input clicked:", e)}
+				className="sr-only"
+				aria-label="Attach image"
 			/>
 
 			{/* Drag and drop hint - responsive */}
