@@ -14,6 +14,7 @@ import LoginModal from "@/components/LoginModal";
 import VerifiedBadge from "@/components/ui/VerifiedBadge";
 import FriendRequestsPanel from "@/components/FriendRequestsPanel";
 import FriendsList from "@/components/FriendsList";
+import { axiosInstance } from "@/lib/axios";
 
 const FriendsActivity = () => {
 	const { users, fetchUsers, onlineUsers, userActivities } = useChatStore();
@@ -171,16 +172,18 @@ const FriendsActivity = () => {
 			return;
 		}
 
+		if (query.trim().length < 2) {
+			setSearchResults([]);
+			return;
+		}
+
 		setIsSearching(true);
 		try {
-			// Search for users by name, username (handle), and artist name
-			const results = users.filter(user => 
-				user.fullName.toLowerCase().includes(query.toLowerCase()) ||
-				user.handle?.toLowerCase().includes(query.toLowerCase()) ||
-				user.artistName?.toLowerCase().includes(query.toLowerCase())
+			const response = await axiosInstance.get(
+				`/users/search?q=${encodeURIComponent(query.trim())}&type=all&limit=20`
 			);
-			
-			setSearchResults(results);
+			const results = response.data?.users || [];
+			setSearchResults(results.filter((searchUser: any) => searchUser.clerkId !== user?.id));
 		} catch (error) {
 			console.error('Error searching users:', error);
 			setSearchResults([]);
